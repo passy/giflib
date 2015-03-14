@@ -1,0 +1,28 @@
+{
+  "name": "giflib-web",
+  "version": "0.0.0",
+  "homepage": "https://github.com/passy/giflib-web",
+  "authors": [
+    "Pascal Hartig <passy@twitter.com>"
+  ],
+  "main": "index.html",
+  "keywords": [
+    "gifs",
+    "purescript"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "~0.12.0",
+    "purescript-react": "~0.0.5",
+    "purescript-arrays": "~0.2.1",
+    "todomvc-common": "~0.3.1"
+  }
+}
