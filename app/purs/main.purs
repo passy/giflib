@@ -46,4 +46,5 @@ render :: T.Render State _ Action
 render ctx (State st) _ =
     T.div [ A.className "hello-world" ] [ T.text "hello" ]
 
+main :: Control.Monad.Eff.Eff (dom :: DOM.DOM) Unit
 main = T.render (T.createClass spec) {}
