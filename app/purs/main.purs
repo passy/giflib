@@ -3,7 +3,8 @@ module Main where
 import Debug.Trace
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
-import Data.Date (date, Month(..))
+import Data.Date (date, Month(..), Date(..))
+import Data.Array (map)
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 
@@ -22,8 +23,8 @@ data State = State { entries :: [Entry] -- ^ All entries matching the tag
 data Action =
     NoOp
 
-initialState :: State
-initialState = State { entries: [], tag: Nothing }
+emptyState :: State
+emptyState = State { entries: [], tag: Nothing }
 
 demoEntries :: [Entry]
 demoEntries = [ Entry { uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
@@ -40,7 +41,7 @@ demoState :: State
 demoState = State { entries: demoEntries , tag: Nothing }
 
 spec :: T.Spec _ State _ Action
-spec = T.Spec { initialState: initialState
+spec = T.Spec { initialState: demoState
               , performAction: performAction
               , render: render
               , componentWillMount: Nothing
@@ -53,9 +54,31 @@ performAction _ action = T.modifyState (updateState action)
     updateState :: Action -> State -> State
     updateState NoOp = id
 
+
 render :: T.Render State _ Action
 render ctx (State st) _ =
-    T.div [ A.className "hello-world" ] [ T.text "hello" ]
+    T.div [ A.className "giflib-app" ] $ map entryCard st.entries
+
+    where
+
+    entryCard :: Entry -> T.Html _
+    entryCard e = T.div
+        [ A.className "wsk-card wsk-shadow--z3" ]
+        [ T.div [ A.className "wsk-card--img-container" ] []
+        , T.div [ A.className "wsk-card--heading" ] [ T.h2
+                [ A.className "wsk-card--heading-text" ] [ T.text "#tags" ]
+            ]
+        , T.div [ A.className "wsk-card--caption" ] [ T.text "1970-01-01 00:00:00" ]
+        , T.div [ A.className "wsk-card--bottom" ] [ T.a
+                [ A.href "#" ] [ T.text "Some Action" ]
+            ]
+        ]
+
+    formatEntryTags :: [Tag] -> String
+    formatEntryTags _ = "#tags"
+
+    formatEntryDatetime :: Date -> String
+    formatEntryDatetime _ = "1970-01-01 00:00:00"
 
 main :: forall eff. Control.Monad.Eff.Eff (dom :: DOM.DOM | eff) Unit
 main = T.render (T.createClass spec) {}
