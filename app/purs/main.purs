@@ -1,7 +1,9 @@
 module Main where
 
 import Debug.Trace
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe.Unsafe (fromJust)
+import Data.Date (date, Month(..))
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 
@@ -22,6 +24,20 @@ data Action =
 
 initialState :: State
 initialState = State { entries: [], tag: Nothing }
+
+demoEntries :: [Entry]
+demoEntries = [ Entry { uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+                      , tags: [ "hamster", "party", "animals" ]
+                      , date: fromJust $ date 2015 January 1
+                      }
+              , Entry { uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
+                      , tags: [ "cat", "wiggle", "animals" ]
+                      , date: fromJust $ date 2015 February 28
+                      }
+              ]
+
+demoState :: State
+demoState = State { entries: demoEntries , tag: Nothing }
 
 spec :: T.Spec _ State _ Action
 spec = T.Spec { initialState: initialState
