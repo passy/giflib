@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
@@ -28,38 +28,46 @@
 
     <!-- Page styles -->
     <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/demo.css">
   </head>
   <body>
-    <header class="app-bar promote-layer">
-      <div class="app-bar-container">
-        <button class="menu"><img src="images/hamburger.svg" alt="Menu"></button>
-        <h1 class="logo">Web <strong>Starter Kit</strong></h1>
-        <section class="app-bar-actions">
-        <!-- Put App Bar Buttons Here -->
-        <!-- e.g <button><i class="icon icon-star"></i></button> -->
-        </section>
+    <div class="wsk-layout">
+      <div class="wsk-layout__header">
+        <span class="wsk-layout-title"><strong>gif</strong>library</span>
+        <div class="wsk-layout-spacer"></div>
+        <nav class="wsk-navigation">
+          <a class="wsk-navigation__link" href="#hello">Hello</a>
+          <a class="wsk-navigation__link" href="#get-started">Get Started</a>
+          <a class="wsk-navigation__link" href="styleguide.html">Style Guide</a>
+        </nav>
       </div>
-    </header>
+      <div class="wsk-layout__drawer">
+        <span class="wsk-layout-title">Web <strong>Starter Kit</strong></span>
+        <nav class="wsk-navigation">
+          <a class="wsk-navigation__link" href="#hello">Hello</a>
+          <a class="wsk-navigation__link" href="#get-started">Get Started</a>
+          <a class="wsk-navigation__link" href="styleguide.html">Style Guide</a>
+        </nav>
+      </div>
 
-    <nav class="navdrawer-container promote-layer">
-      <h4>Navigation</h4>
-      <ul>
-        <li><a href="#hello">Hello</a></li>
-        <li><a href="#get-started">Get Started</a></li>
-        <li><a href="styleguide.html">Style Guide</a></li>
-      </ul>
-    </nav>
+      <main id="app-main" class="wsk-layout__content">
+        <h2 id="hello">Welcome to Web Starter Kit!</h2>
+        <p>Good luck with your amazing new project.</p>
 
-    <main>
-      <h1 id="hello">Hello!</h1>
-      <p>Welcome to Web Starter Kit.</p>
+        <div class="wsk-card wsk-shadow--z3">
+          <div class="wsk-card--img-container"></div>
+          <div class="wsk-card--heading">
+            <h2 class="wsk-card--heading-text">#cats #waving #sindre</h2>
+          </div>
+          <div class="wsk-card--caption">March 24th, 2014</div>
+          <div class="wsk-card--bottom"><a>Some Action</a></div>
+        </div>
+      </main>
+    </div>
 
-      <h2 id="get-started">Get Started.</h2>
-      <p>Read how to <a href="https://developers.google.com/web/starter-kit">Get Started</a> or check out the <a href="styleguide.html">Style Guide</a>.</p>
-    </main>
-
-    <!-- build:js js/main.min.js -->
-    <script src="js/app.js"></script>
+    <!-- build:js(app/) js/app.min.js -->
+    <script async src="../bower_components/react/react-with-addons.js"></script>
+    <script async src="js/app.js"></script>
     <!-- endbuild -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
