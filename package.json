@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "http-server",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "repl": "bash -c -- psci bower_components/purescript-*/src/**.purs app/purs/*.purs app/purs/**/*.purs"
   },
   "repository": {
     "type": "git",

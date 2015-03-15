@@ -20,8 +20,6 @@ $ npm run serve
 $ open http://localhost:8080
 
 # Repl'ing
-# Surely there's a better way for this somehow
-$ find bower_components/ -name 'example' -print -delete
-$ psci bower_components/purescript-*/**.purs app/purs/*.purs
+$ npm run repl
 > :i Main
 ```
