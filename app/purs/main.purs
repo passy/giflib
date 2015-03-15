@@ -3,6 +3,8 @@ module Main where
 import Debug.Trace
 import Data.Maybe (Maybe(..))
 
+import Web.Giflib.Types (URI(), Tag(), Entry(..))
+
 import qualified Thermite as T
 import qualified Thermite.Html as T
 import qualified Thermite.Html.Elements as T
@@ -10,13 +12,6 @@ import qualified Thermite.Html.Attributes as A
 import qualified Thermite.Events as T
 import qualified Thermite.Action as T
 import qualified Thermite.Types as T
-
-type Tag = String
-
-data Entry = Entry { uri :: String -- TODO: URI
-                   , tags :: [Tag]
-                   , date :: Number -- TODO: DateTime
-                   }
 
 data State = State { entries :: [Entry] -- ^ All entries matching the tag
                    , tag :: Maybe Tag -- ^ Currently selected tag, if any
@@ -46,5 +41,5 @@ render :: T.Render State _ Action
 render ctx (State st) _ =
     T.div [ A.className "hello-world" ] [ T.text "hello" ]
 
-main :: Control.Monad.Eff.Eff (dom :: DOM.DOM) Unit
+main :: forall eff. Control.Monad.Eff.Eff (dom :: DOM.DOM | eff) Unit
 main = T.render (T.createClass spec) {}
