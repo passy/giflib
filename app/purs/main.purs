@@ -9,6 +9,8 @@ import Data.String (joinWith)
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 
+import Thermite.Internal (unsafeAttribute)
+
 import qualified Thermite as T
 import qualified Thermite.Html as T
 import qualified Thermite.Html.Elements as T
@@ -23,6 +25,9 @@ data State = State { entries :: [Entry] -- ^ All entries matching the tag
 
 data Action =
     NoOp
+
+style :: forall s action. { | s } -> T.Prop action
+style = unsafeAttribute "style"
 
 emptyState :: State
 emptyState = State { entries: [], tag: Nothing }
@@ -66,16 +71,16 @@ render ctx (State st) _ =
     entryCard :: Entry -> T.Html _
     entryCard e = T.div
         [ A.className "wsk-card wsk-shadow--z3" ]
-        [ T.div [ A.className "wsk-card--img-container" ] [ T.img
-                [ A.alt "gif"
-                , A.src e.uri
+        [ T.div [ A.className "wsk-card--img-container"
+                , style $ { "background-image": "url(" ++ e.uri ++ ")" }
                 ] []
-            ]
-        , T.div [ A.className "wsk-card--heading" ] [ T.h2
+        , T.div [ A.className "wsk-card--heading" ]
+            [ T.h2
                 [ A.className "wsk-card--heading-text" ] [ T.text $ formatEntryTags e ]
             ]
         , T.div [ A.className "wsk-card--caption" ] [ T.text $ formatEntryDatetime e ]
-        , T.div [ A.className "wsk-card--bottom" ] [ T.a
+        , T.div [ A.className "wsk-card--bottom" ]
+            [ T.a
                 [ A.href "#" ] [ T.text "Some Action" ]
             ]
         ]
