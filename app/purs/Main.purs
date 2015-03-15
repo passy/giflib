@@ -3,7 +3,6 @@ module Main where
 import Debug.Trace
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
-import Data.Date (date, Month(..), Date(..))
 import Data.Array (map, concat)
 import Data.String (joinWith)
 
@@ -17,6 +16,7 @@ import qualified Thermite.Html.Attributes.Extra as A
 import qualified Thermite.Events as T
 import qualified Thermite.Action as T
 import qualified Thermite.Types as T
+import qualified Data.Date as Date
 
 data State = State { entries :: [Entry] -- ^ All entries matching the tag
                    , tag :: Maybe Tag -- ^ Currently selected tag, if any
@@ -31,11 +31,11 @@ emptyState = State { entries: [], tag: Nothing }
 demoEntries :: [Entry]
 demoEntries = [ { uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                 , tags: [ "hamster", "party", "animals" ]
-                , date: fromJust $ date 2015 January 1
+                , date: fromJust $ Date.date 2015 Date.January 1
                 }
               , { uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
                 , tags: [ "cat", "wiggle", "animals" ]
-                , date: fromJust $ date 2015 February 28
+                , date: fromJust $ Date.date 2015 Date.February 28
                 }
               ]
 
@@ -81,8 +81,8 @@ render ctx (State st) _ =
             ]
         ]
 
-formatEntryDatetime :: forall e. { date :: Date | e } -> String
-formatEntryDatetime _ = "1970-01-01 00:00:00"
+formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
+formatEntryDatetime e = show e.date
 
 formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
