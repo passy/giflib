@@ -4,7 +4,8 @@ import Debug.Trace
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Date (date, Month(..), Date(..))
-import Data.Array (map)
+import Data.Array (map, concat)
+import Data.String (joinWith)
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 
@@ -27,14 +28,14 @@ emptyState :: State
 emptyState = State { entries: [], tag: Nothing }
 
 demoEntries :: [Entry]
-demoEntries = [ Entry { uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
-                      , tags: [ "hamster", "party", "animals" ]
-                      , date: fromJust $ date 2015 January 1
-                      }
-              , Entry { uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
-                      , tags: [ "cat", "wiggle", "animals" ]
-                      , date: fromJust $ date 2015 February 28
-                      }
+demoEntries = [ { uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+                , tags: [ "hamster", "party", "animals" ]
+                , date: fromJust $ date 2015 January 1
+                }
+              , { uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
+                , tags: [ "cat", "wiggle", "animals" ]
+                , date: fromJust $ date 2015 February 28
+                }
               ]
 
 demoState :: State
@@ -57,6 +58,7 @@ performAction _ action = T.modifyState (updateState action)
 
 render :: T.Render State _ Action
 render ctx (State st) _ =
+    -- TODO: Needs a key attribute
     T.div [ A.className "giflib-app" ] $ map entryCard st.entries
 
     where
@@ -64,21 +66,25 @@ render ctx (State st) _ =
     entryCard :: Entry -> T.Html _
     entryCard e = T.div
         [ A.className "wsk-card wsk-shadow--z3" ]
-        [ T.div [ A.className "wsk-card--img-container" ] []
-        , T.div [ A.className "wsk-card--heading" ] [ T.h2
-                [ A.className "wsk-card--heading-text" ] [ T.text "#tags" ]
+        [ T.div [ A.className "wsk-card--img-container" ] [ T.img
+                [ A.alt "gif"
+                , A.src e.uri
+                ] []
             ]
-        , T.div [ A.className "wsk-card--caption" ] [ T.text "1970-01-01 00:00:00" ]
+        , T.div [ A.className "wsk-card--heading" ] [ T.h2
+                [ A.className "wsk-card--heading-text" ] [ T.text $ formatEntryTags e ]
+            ]
+        , T.div [ A.className "wsk-card--caption" ] [ T.text $ formatEntryDatetime e ]
         , T.div [ A.className "wsk-card--bottom" ] [ T.a
                 [ A.href "#" ] [ T.text "Some Action" ]
             ]
         ]
 
-    formatEntryTags :: [Tag] -> String
-    formatEntryTags _ = "#tags"
+formatEntryDatetime :: forall e. { date :: Date | e } -> String
+formatEntryDatetime _ = "1970-01-01 00:00:00"
 
-    formatEntryDatetime :: Date -> String
-    formatEntryDatetime _ = "1970-01-01 00:00:00"
+formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
+formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
 
 main :: forall eff. Control.Monad.Eff.Eff (dom :: DOM.DOM | eff) Unit
 main = T.render (T.createClass spec) {}
