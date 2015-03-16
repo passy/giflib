@@ -7,6 +7,8 @@ import Data.Array (map, concat)
 import Data.String (joinWith)
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
+import Control.Monad.Eff.DOM (querySelector)
+import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 import qualified Thermite as T
 import qualified Thermite.Html as T
@@ -68,7 +70,7 @@ render ctx (State st) _ =
     entryCard e = T.div
         [ A.className "wsk-card wsk-shadow--z3" ]
         [ T.div [ A.className "wsk-card--img-container"
-                , A.style $ { "background-image": "url(" ++ e.uri ++ ")" }
+                , A.style $ { "backgroundImage": "url(" ++ e.uri ++ ")" }
                 ] []
         , T.div [ A.className "wsk-card--heading" ]
             [ T.h2
@@ -87,5 +89,9 @@ formatEntryDatetime e = show e.date
 formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
 
-main :: forall eff. Control.Monad.Eff.Eff (dom :: DOM.DOM | eff) Unit
-main = T.render (T.createClass spec) {}
+main :: forall eff. Control.Monad.Eff.Eff (dom :: DOM.DOM, err :: Exception | eff) Unit
+main = do
+    el <- querySelector "#app-main"
+    case el of
+         Just e -> T.renderTo e (T.createClass spec) {}
+         Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
