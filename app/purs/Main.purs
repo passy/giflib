@@ -80,7 +80,7 @@ render ctx (State st) _ =
         , T.div [ A.className "wsk-card--caption" ] [ T.text $ formatEntryDatetime e ]
         , T.div [ A.className "wsk-card--bottom" ]
             [ T.a
-                [ A.href "#" ] [ T.text "Some Action" ]
+                [ A.href e.uri ] [ T.text "Link to Image" ]
             ]
         ]
 
