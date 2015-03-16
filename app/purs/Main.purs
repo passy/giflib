@@ -20,6 +20,7 @@ import qualified Thermite.Action as T
 import qualified Thermite.Types as T
 import qualified Data.Date as Date
 
+
 data State = State { entries :: [Entry] -- ^ All entries matching the tag
                    , tag :: Maybe Tag -- ^ Currently selected tag, if any
                    }
