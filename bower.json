@@ -23,7 +23,7 @@
     "react": "~0.12.0"
   },
   "devDependencies": {
-    "purescript-thermite": "~0.5.2",
+    "purescript-thermite": "5380bcccdfc2eea4beec06b66ef4d8d5243e4de8",
     "purescript-datetime": "~0.3.1",
     "purescript-react": "~0.0.5",
     "purescript-arrays": "~0.2.1",
