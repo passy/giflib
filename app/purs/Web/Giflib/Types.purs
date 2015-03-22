@@ -5,7 +5,8 @@ import Data.Date (Date())
 type URI = String
 type Tag = String
 
-type Entry = { uri :: URI
+type Entry = { id :: String
+             , uri :: URI
              , tags :: [Tag]
              , date :: Date
              }

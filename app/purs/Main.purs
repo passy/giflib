@@ -32,11 +32,13 @@ emptyState :: State
 emptyState = State { entries: [], tag: Nothing }
 
 demoEntries :: [Entry]
-demoEntries = [ { uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
+                , uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                 , tags: [ "hamster", "party", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.January 1
                 }
-              , { uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
+              , { id: "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
+                , uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
                 , tags: [ "cat", "wiggle", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.February 28
                 }
@@ -62,14 +64,17 @@ performAction _ action = T.modifyState (updateState action)
 
 render :: T.Render State _ Action
 render ctx (State st) _ =
-    -- TODO: Needs a key attribute
-    T.div [ A.className "giflib-app" ] $ map entryCard st.entries
+    T.div [ A.className "giflib-app" ]
+        [ T.div [ A.className "gla-card-holder" ] $ map entryCard st.entries
+        ]
 
     where
 
     entryCard :: Entry -> T.Html _
     entryCard e = T.div
-        [ A.className "wsk-card wsk-shadow--z3" ]
+        [ A.className "wsk-card wsk-shadow--z3"
+        , A.key e.id
+        ]
         [ T.div [ A.className "wsk-card--img-container"
                 , A.style $ { "backgroundImage": "url(" ++ e.uri ++ ")" }
                 ] []
@@ -80,7 +85,9 @@ render ctx (State st) _ =
         , T.div [ A.className "wsk-card--caption" ] [ T.text $ formatEntryDatetime e ]
         , T.div [ A.className "wsk-card--bottom" ]
             [ T.a
-                [ A.href e.uri ] [ T.text "Link to Image" ]
+                [ A.href e.uri
+                , A.className "wsk-card--uri"
+                , A.target "_blank" ] [ T.text e.uri ]
             ]
         ]
 
