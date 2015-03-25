@@ -1,5 +1,7 @@
 language: node_js
 sudo: false
+before_script:
+  - bower install
 node_js:
 - '0.11'
 - '0.10'
