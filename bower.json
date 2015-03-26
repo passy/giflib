@@ -28,7 +28,8 @@
     "purescript-react": "~0.0.5",
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
-    "purescript-exceptions": "~0.2.2"
+    "purescript-exceptions": "~0.2.2",
+    "purescript-halogen": "c138c57b134dbae3fcbefe60135faaff3a03e248"
   },
   "resolutions": {
     "purescript-arrays": "~0.3.0",
