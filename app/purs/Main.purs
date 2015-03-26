@@ -7,7 +7,7 @@ import Data.Array (map, concat)
 import Data.String (joinWith)
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
-import Control.Monad.Eff.DOM (querySelector)
+import Control.Monad.Eff.DOM (querySelector, appendChild)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 import qualified Thermite as T
