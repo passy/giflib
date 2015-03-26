@@ -21,7 +21,7 @@ foreign import createElement
   \  return function() {\
   \    return document.createElement(name);\
   \  };\
-  \}" :: forall eff. String -> Eff (dom :: DOM | eff) Node 
+  \}" :: forall eff. String -> Eff (dom :: DOM | eff) Node
 
 --
 -- Selector Functions
@@ -39,16 +39,16 @@ querySelector :: forall eff. String -> Eff (dom :: DOM | eff) (Maybe Node)
 querySelector s = runFn3 querySelectorImpl Nothing Just s
 
 --
--- Append 
+-- Append
 --
 
-foreign import appendChild 
+foreign import appendChild
   "function appendChild(child) {\
   \  return function(node) {\
   \    return function() {\
   \      node.appendChild(child);\
   \      return node;\
-  \    };\ 
+  \    };\
   \  };\
   \}" :: forall eff. Node -> Node -> Eff (dom :: DOM | eff) Node
 
@@ -70,7 +70,7 @@ foreign import addClass
 -- Properties
 --
 
-foreign import setText 
+foreign import setText
   "function setText(text) {\
   \  return function(node) {\
   \    return function() {\
@@ -78,16 +78,16 @@ foreign import setText
   \      return node;\
   \    };\
   \  };\
-  \}" :: forall eff. String -> Node -> Eff (dom :: DOM | eff) Node 
+  \}" :: forall eff. String -> Node -> Eff (dom :: DOM | eff) Node
 
-foreign import getValue 
+foreign import getValue
   "function getValue(node) {\
   \  return function() {\
   \    return node.value;\
   \  };\
   \}" :: forall eff. Node -> Eff (dom :: DOM | eff) Foreign
 
-foreign import setValue 
+foreign import setValue
   "function setValue(value) {\
   \  return function(node) {\
   \    return function() {\
@@ -95,9 +95,9 @@ foreign import setValue
   \      return node;\
   \    };\
   \  };\
-  \}" :: forall a eff. a -> Node -> Eff (dom :: DOM | eff) Node 
+  \}" :: forall a eff. a -> Node -> Eff (dom :: DOM | eff) Node
 
-foreign import setInnerHTML 
+foreign import setInnerHTML
   "function setInnerHTML(html) {\
   \  return function(node) {\
   \    return function() {\
@@ -123,4 +123,4 @@ foreign import addEventListener
   \      };\
   \    };\
   \  };\
-  \}" :: forall eff. String -> Eff (dom :: DOM | eff) Unit -> Node -> Eff (dom :: DOM | eff) Unit 
+  \}" :: forall eff. String -> Eff (dom :: DOM | eff) Unit -> Node -> Eff (dom :: DOM | eff) Unit
