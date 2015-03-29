@@ -61,5 +61,5 @@ main = do
   Tuple node driver <- runUI (pureUI view)
   el <- querySelector "#app-main"
   case el of
-    Just e -> appendChild e node
+    Just e -> appendChild node e
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
