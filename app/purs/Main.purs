@@ -13,6 +13,8 @@ import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Data.Date as Date
+import qualified WSK as WSK
+import qualified Data.StrMap as StrMap
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Control.Monad.Eff.DOM (querySelector, appendChild)
@@ -54,8 +56,44 @@ view :: forall p r node. (H.HTMLRepr node) => SF1 Action (node p r)
 view = render <$> stateful demoState update
   where
   render :: State -> node p r
-  render _ =
-    H.p_ [ H.text "Hello, World" ]
+  render st =
+    H.div [ A.class_ $ A.className "giflib-app" ]
+      [ H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
+      ]
+
+    where
+
+    backgroundImage :: String -> A.Styles
+    backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
+
+    entryCard :: Entry -> node p r
+    entryCard e = H.div
+        -- TODO: halogen doesn't support keys at the moment which
+        -- would certainly be desirable for diffing perf:
+        -- https://github.com/Matt-Esch/virtual-dom/blob/7cd99a160f8d7c9953e71e0b26a740dae40e55fc/docs/vnode.md#arguments
+        [ A.classes [WSK.card, WSK.shadow 3]
+        ]
+        [ H.div [ A.class_ WSK.cardImageContainer
+                , A.style $ backgroundImage e.uri
+                ] []
+        , H.div [ A.class_ WSK.cardHeading ]
+            [ H.h2
+                [ A.class_ WSK.cardHeadingText ] [ H.text $ formatEntryTags e ]
+            ]
+        , H.div [ A.class_ WSK.cardCaption ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ A.class_ WSK.cardBottom ]
+            [ H.a
+                [ A.href e.uri
+                , A.class_ WSK.cardUri
+                , A.target "_blank" ] [ H.text e.uri ]
+            ]
+        ]
+
+formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
+formatEntryDatetime e = show e.date
+
+formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
+formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
 
 main = do
   Tuple node driver <- runUI (pureUI view)
