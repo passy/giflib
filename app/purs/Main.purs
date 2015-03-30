@@ -45,7 +45,7 @@ demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
               ]
 
 demoState :: State
-demoState = State { entries: demoEntries , tag: Nothing }
+demoState = State { entries: demoEntries, tag: Just "animals" }
 
 update :: State -> Action -> State
 update s a = updateState a s
