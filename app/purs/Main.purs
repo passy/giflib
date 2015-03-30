@@ -21,15 +21,15 @@ import Control.Monad.Eff.DOM (querySelector, appendChild)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 
-data State = State { entries :: [Entry] -- ^ All entries matching the tag
-                   , tag :: Maybe Tag -- ^ Currently selected tag, if any
-                   }
+type State = { entries :: [Entry]   -- ^ All entries matching the tag
+             , tag     :: Maybe Tag -- ^ Currently selected tag, if any
+             }
 
 data Action =
     NoOp
 
 emptyState :: State
-emptyState = State { entries: [], tag: Nothing }
+emptyState = { entries: [], tag: Nothing }
 
 demoEntries :: [Entry]
 demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
@@ -45,7 +45,7 @@ demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
               ]
 
 demoState :: State
-demoState = State { entries: demoEntries, tag: Just "animals" }
+demoState = { entries: demoEntries, tag: Just "animals" }
 
 update :: State -> Action -> State
 update s a = updateState a s
