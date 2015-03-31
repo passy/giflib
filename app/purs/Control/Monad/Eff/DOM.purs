@@ -23,13 +23,6 @@ foreign import createElement
   \  };\
   \}" :: forall eff. String -> Eff (dom :: DOM | eff) Node
 
-foreign import appendChild
-  "function appendChild(node) {\
-  \ return function (child) {\
-  \   return node.appendChild(child);\
-  \ };\
-  \}" :: forall eff. Node -> Node -> Eff (dom :: DOM | eff) Node
-
 --
 -- Selector Functions
 --

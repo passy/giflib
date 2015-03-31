@@ -3,6 +3,7 @@
 var gulp = require('gulp');
 var del = require('del');
 var purescript = require('gulp-purescript');
+var browserify = require('gulp-browserify');
 
 gulp.task('build', function () {
     gulp.src([
@@ -13,6 +14,7 @@ gulp.task('build', function () {
         output: 'app.js',
         main: true
     }))
+    .pipe(browserify({}))
     .pipe(gulp.dest('app/js/'));
 });
 

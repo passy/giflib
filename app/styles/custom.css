@@ -1,0 +1,15 @@
+.gla-card-holder {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.gla-card-holder .wsk-card {
+  margin: 20px;
+  min-width: 330px;
+  height: auto;
+}
+
+.wsk-card--uri {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

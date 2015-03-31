@@ -5,31 +5,31 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Array (map, concat)
 import Data.String (joinWith)
+import Data.Tuple (Tuple(..))
+
+import Halogen (runUI, pureUI)
+import Halogen.Signal (SF1(..), stateful)
+import qualified Halogen.HTML as H
+import qualified Halogen.HTML.Attributes as A
+import qualified Halogen.HTML.Events as A
+import qualified Data.Date as Date
+import qualified WSK as WSK
+import qualified Data.StrMap as StrMap
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Control.Monad.Eff.DOM (querySelector, appendChild)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
-import qualified Thermite as T
-import qualified Thermite.Html as T
-import qualified Thermite.Html.Elements as T
-import qualified Thermite.Html.Attributes as A
-import qualified Thermite.Html.Attributes.Extra as A
-import qualified Thermite.Events as T
-import qualified Thermite.Action as T
-import qualified Thermite.Types as T
-import qualified Data.Date as Date
 
-
-data State = State { entries :: [Entry] -- ^ All entries matching the tag
-                   , tag :: Maybe Tag -- ^ Currently selected tag, if any
-                   }
+type State = { entries :: [Entry]   -- ^ All entries matching the tag
+             , tag     :: Maybe Tag -- ^ Currently selected tag, if any
+             }
 
 data Action =
     NoOp
 
 emptyState :: State
-emptyState = State { entries: [], tag: Nothing }
+emptyState = { entries: [], tag: Nothing }
 
 demoEntries :: [Entry]
 demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
@@ -45,49 +45,47 @@ demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
               ]
 
 demoState :: State
-demoState = State { entries: demoEntries , tag: Nothing }
+demoState = { entries: demoEntries, tag: Just "animals" }
 
-spec :: T.Spec _ State _ Action
-spec = T.Spec { initialState: demoState
-              , performAction: performAction
-              , render: render
-              , componentWillMount: Nothing
-              , displayName: Just "giflib-app"
-              }
+update :: State -> Action -> State
+update s a = updateState a s
+  where
+  updateState NoOp = id
 
-performAction :: T.PerformAction _ Action (T.Action _ State)
-performAction _ action = T.modifyState (updateState action)
-    where
-    updateState :: Action -> State -> State
-    updateState NoOp = id
-
-
-render :: T.Render State _ Action
-render ctx (State st) _ =
-    T.div [ A.className "giflib-app" ]
-        [ T.div [ A.className "gla-card-holder" ] $ map entryCard st.entries
-        ]
+view :: forall p r node. (H.HTMLRepr node) => SF1 Action (node p r)
+view = render <$> stateful demoState update
+  where
+  render :: State -> node p r
+  render st =
+    H.div [ A.class_ $ A.className "giflib-app" ]
+      [ H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
+      ]
 
     where
 
-    entryCard :: Entry -> T.Html _
-    entryCard e = T.div
-        [ A.className "wsk-card wsk-shadow--z3"
-        , A.key e.id
+    backgroundImage :: String -> A.Styles
+    backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
+
+    entryCard :: Entry -> node p r
+    entryCard e = H.div
+        -- TODO: halogen doesn't support keys at the moment which
+        -- would certainly be desirable for diffing perf:
+        -- https://github.com/Matt-Esch/virtual-dom/blob/7cd99a160f8d7c9953e71e0b26a740dae40e55fc/docs/vnode.md#arguments
+        [ A.classes [WSK.card, WSK.shadow 3]
         ]
-        [ T.div [ A.className "wsk-card--img-container"
-                , A.style $ { "backgroundImage": "url(" ++ e.uri ++ ")" }
+        [ H.div [ A.class_ WSK.cardImageContainer
+                , A.style $ backgroundImage e.uri
                 ] []
-        , T.div [ A.className "wsk-card--heading" ]
-            [ T.h2
-                [ A.className "wsk-card--heading-text" ] [ T.text $ formatEntryTags e ]
+        , H.div [ A.class_ WSK.cardHeading ]
+            [ H.h2
+                [ A.class_ WSK.cardHeadingText ] [ H.text $ formatEntryTags e ]
             ]
-        , T.div [ A.className "wsk-card--caption" ] [ T.text $ formatEntryDatetime e ]
-        , T.div [ A.className "wsk-card--bottom" ]
-            [ T.a
+        , H.div [ A.class_ WSK.cardCaption ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ A.class_ WSK.cardBottom ]
+            [ H.a
                 [ A.href e.uri
-                , A.className "wsk-card--uri"
-                , A.target "_blank" ] [ T.text e.uri ]
+                , A.class_ WSK.cardUri
+                , A.target "_blank" ] [ H.text e.uri ]
             ]
         ]
 
@@ -97,9 +95,9 @@ formatEntryDatetime e = show e.date
 formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
 
-main :: forall eff. Control.Monad.Eff.Eff (dom :: DOM.DOM, err :: Exception | eff) Unit
 main = do
-    el <- querySelector "#app-main"
-    case el of
-         Just e -> T.renderTo e (T.createClass spec) {}
-         Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
+  Tuple node driver <- runUI (pureUI view)
+  el <- querySelector "#app-main"
+  case el of
+    Just e -> appendChild node e
+    Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
