@@ -1,7 +1,16 @@
-module WSK where
+module WSK
+  ( card
+  , cardImageContainer
+  , cardHeading
+  , cardHeadingText
+  , cardCaption
+  , cardBottom
+  , cardUri
+  , shadow
+  )
+where
 
 import Halogen.HTML.Attributes (ClassName(), className)
-
 
 card :: ClassName
 card = className "wsk-card"
