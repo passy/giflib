@@ -14,6 +14,7 @@ import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Data.Date as Date
 import qualified WSK as WSK
+import qualified WSK.Textfield as WSK
 import qualified Data.StrMap as StrMap
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
@@ -58,7 +59,11 @@ view = render <$> stateful demoState update
   render :: State -> node p r
   render st =
     H.div [ A.class_ $ A.className "giflib-app" ]
-      [ H.input [ A.placeholder "New GIF", A.type_ "uri" ] []
+      [ WSK.textfield { id: "inp-new-gif"
+                      , label: "New GIF"
+                      , type_: "uri"
+                      , floatingLabel: true
+                      }
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
