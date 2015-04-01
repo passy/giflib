@@ -19,7 +19,7 @@ cardCaption :: ClassName
 cardCaption = className "wsk-card--caption"
 
 cardBottom :: ClassName
-cardBottom = className "wsk-card--buttom"
+cardBottom = className "wsk-card--bottom"
 
 cardUri :: ClassName
 cardUri = className "wsk-card--uri"
