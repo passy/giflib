@@ -58,7 +58,8 @@ view = render <$> stateful demoState update
   render :: State -> node p r
   render st =
     H.div [ A.class_ $ A.className "giflib-app" ]
-      [ H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
+      [ H.input [ A.placeholder "New GIF", A.type_ "uri" ] []
+      , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
     where
