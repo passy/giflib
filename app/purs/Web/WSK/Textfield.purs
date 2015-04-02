@@ -7,7 +7,7 @@ import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 
 type Textfield = { type_         :: String
-                 , id            :: String
+                 , id            :: Maybe String
                  , label         :: String
                  , floatingLabel :: Boolean
                  }
@@ -15,11 +15,10 @@ type Textfield = { type_         :: String
 textfield :: forall p r node. (H.HTMLRepr node) => Textfield -> node p r
 textfield t =
   H.div [ A.classes mainClasses ]
-    [ H.input [ A.class_ clsTextfieldInput
-              , A.id_ t.id
-              , A.type_ t.type_
-              ] []
-    , H.label [ A.class_ clsLabel, A.for t.id ] [ H.text t.label ]
+    [ H.input ([ A.class_ clsTextfieldInput
+               , A.type_ t.type_
+               ] <> (mip A.id_ t.id)) []
+    , H.label ([ A.class_ clsLabel ] <> (mip A.for t.id)) [ H.text t.label ]
     ]
   where clsTextfield         = A.className "wsk-textfield"
         clsJsTextfield       = A.className "wsk-js-textfield"
