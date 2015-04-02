@@ -30,5 +30,5 @@ textfield t =
           [ clsTextfield, clsJsTextfield ] ++
             if t.floatingLabel then [ clsFloatingTextfield ] else []
 
-mip :: forall a b f m. (Monoid (f b), Applicative f) => (a -> b) -> Maybe a -> f b
-mip f = maybe mempty (pure . f)
+mip :: forall a b f. (Monoid (f b), Applicative f) => (a -> b) -> Maybe a -> f b
+mip f = maybe mempty (pure <<< f)
