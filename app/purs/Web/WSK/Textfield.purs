@@ -1,11 +1,14 @@
 module WSK.Textfield where
 
+import Data.Monoid
+import Data.Maybe
+
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 
 type Textfield = { type_         :: String
                  , id            :: String
-                 , label         :: String -- Should be a Maybe
+                 , label         :: String
                  , floatingLabel :: Boolean
                  }
 
@@ -26,3 +29,6 @@ textfield t =
         mainClasses =
           [ clsTextfield, clsJsTextfield ] ++
             if t.floatingLabel then [ clsFloatingTextfield ] else []
+
+mip :: forall a b f m. (Monoid (f b), Applicative f) => (a -> b) -> Maybe a -> f b
+mip f = maybe mempty (pure . f)
