@@ -60,7 +60,7 @@ view = render <$> stateful demoState update
   render st =
     H.div [ A.class_ $ A.className "giflib-app" ]
       [ WSK.textfield { id: Just "inp-new-gif"
-                      , label: "New GIF"
+                      , label: Just "New GIF"
                       , type_: "uri"
                       , floatingLabel: true
                       }

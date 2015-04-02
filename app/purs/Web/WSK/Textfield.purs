@@ -8,18 +8,19 @@ import qualified Halogen.HTML.Attributes as A
 
 type Textfield = { type_         :: String
                  , id            :: Maybe String
-                 , label         :: String
+                 , label         :: Maybe String
                  , floatingLabel :: Boolean
                  }
 
 textfield :: forall p r node. (H.HTMLRepr node) => Textfield -> node p r
 textfield t =
   H.div [ A.classes mainClasses ]
-    [ H.input ([ A.class_ clsTextfieldInput
+    ([ H.input ([ A.class_ clsTextfieldInput
                , A.type_ t.type_
                ] <> (mip A.id_ t.id)) []
-    , H.label ([ A.class_ clsLabel ] <> (mip A.for t.id)) [ H.text t.label ]
-    ]
+     ] <>
+     (mip (\lbl -> H.label ([ A.class_ clsLabel ] <> (mip A.for t.id)) [ H.text lbl ]) t.label)
+    )
   where clsTextfield         = A.className "wsk-textfield"
         clsJsTextfield       = A.className "wsk-js-textfield"
         clsFloatingTextfield = A.className "wsk-textfield--floating-label"
