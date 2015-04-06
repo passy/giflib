@@ -1,11 +1,12 @@
 module Main where
 
-import Debug.Trace
+import Control.Functor (($>))
+import Data.Array (map, concat, (!!))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
-import Data.Array (map, concat, (!!))
 import Data.String (joinWith)
 import Data.Tuple (Tuple(..))
+import Debug.Trace
 
 import Halogen (runUI)
 import Halogen.Component (component, Component(..))
@@ -13,6 +14,7 @@ import Halogen.Signal (SF1(..), stateful)
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
+import qualified Halogen.HTML.Events.Handler as E
 import qualified Data.Date as Date
 import qualified WSK as WSK
 import qualified WSK.Textfield as WSK
@@ -63,7 +65,14 @@ ui = component $ render <$> stateful demoState update
   render :: State -> H.HTML p (m Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
-      [ H.form [ A.onsubmit $ A.input (\_ -> NewEntry $ fromJust $ demoEntries !! 0 )
+      -- Oh hai, this works, but I'm gonna be honest, I don't quite understand
+      -- how that signalling works, in particular the ($>) operator which
+      -- discards the value on its left-hand side:
+      -- ($>) :: forall f a b. (Functor f) => f a -> b -> f b
+      -- What we want to produce here is a function of
+      -- Event fields -> EventHandler input
+      -- I hope to come back here later and make sense out of this.
+      [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> (NewEntry $ fromJust $ demoEntries !! 0))
                , A.class_ $ A.className "gla-layout--margin-h" ] [
           WSK.textfield { id: Just "inp-new-gif"
                         , label: Just "New GIF URI"
