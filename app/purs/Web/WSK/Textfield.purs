@@ -12,7 +12,7 @@ type Textfield = { type_         :: String
                  , floatingLabel :: Boolean
                  }
 
-textfield :: forall p r node. (H.HTMLRepr node) => Textfield -> node p r
+textfield :: forall p i. Textfield -> H.HTML p i
 textfield t =
   H.div [ A.classes mainClasses ]
     ([ H.input ([ A.class_ clsTextfieldInput

@@ -1,4 +1,15 @@
+/* GifLibApp Specifics */
+
+.gla-content {
+  margin: 24px;
+}
+
+.gla-layout--margin-h {
+  margin: 12px 0 12px 0;
+}
+
 .gla-card-holder {
+  background: whitesmoke;
   display: flex;
   flex-wrap: wrap;
 }
@@ -8,6 +19,8 @@
   min-width: 330px;
   height: auto;
 }
+
+/* WSK Additions */
 
 .wsk-card--uri {
   overflow: hidden;

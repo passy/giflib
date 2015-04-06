@@ -3,11 +3,12 @@ module Main where
 import Debug.Trace
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
-import Data.Array (map, concat)
+import Data.Array (map, concat, (!!))
 import Data.String (joinWith)
 import Data.Tuple (Tuple(..))
 
-import Halogen (runUI, pureUI)
+import Halogen (runUI)
+import Halogen.Component (component, Component(..))
 import Halogen.Signal (SF1(..), stateful)
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
@@ -26,8 +27,9 @@ type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
              }
 
-data Action =
-    NoOp
+data Action
+  = NoOp
+  | NewEntry Entry
 
 emptyState :: State
 emptyState = { entries: [], tag: Nothing }
@@ -52,18 +54,23 @@ update :: State -> Action -> State
 update s a = updateState a s
   where
   updateState NoOp = id
+  -- TODO: Use lenses!
+  updateState (NewEntry e) = \s -> s { entries = e : s.entries }
 
-view :: forall p r node. (H.HTMLRepr node) => SF1 Action (node p r)
-view = render <$> stateful demoState update
+ui :: forall p m eff. (Applicative m) => Component p m Action Action
+ui = component $ render <$> stateful demoState update
   where
-  render :: State -> node p r
+  render :: State -> H.HTML p (m Action)
   render st =
-    H.div [ A.class_ $ A.className "giflib-app" ]
-      [ WSK.textfield { id: Just "inp-new-gif"
-                      , label: Just "New GIF"
-                      , type_: "uri"
-                      , floatingLabel: true
-                      }
+    H.div [ A.class_ $ A.className "gla-content" ]
+      [ H.form [ A.onsubmit $ A.input (\_ -> NewEntry $ fromJust $ demoEntries !! 0 )
+               , A.class_ $ A.className "gla-layout--margin-h" ] [
+          WSK.textfield { id: Just "inp-new-gif"
+                        , label: Just "New GIF URI"
+                        , type_: "url"
+                        , floatingLabel: true
+                        }
+      ]
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
@@ -72,7 +79,7 @@ view = render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    entryCard :: Entry -> node p r
+    entryCard :: Entry -> H.HTML p (m Action)
     entryCard e = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
@@ -102,7 +109,8 @@ formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
 
 main = do
-  Tuple node driver <- runUI (pureUI view)
+  trace "hi"
+  Tuple node driver <- runUI ui
   el <- querySelector "#app-main"
   case el of
     Just e -> appendChild node e
