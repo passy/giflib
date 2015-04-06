@@ -118,7 +118,6 @@ formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
 
 main = do
-  trace "hi"
   Tuple node driver <- runUI ui
   el <- querySelector "#app-main"
   case el of
