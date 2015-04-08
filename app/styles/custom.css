@@ -20,6 +20,15 @@
   height: auto;
 }
 
+.gla-form--inline-group {
+  display: inline-block;
+  margin-right: 12px;
+}
+
+.gla-form--inline-group::last-child {
+  margin-right: 0;
+}
+
 /* WSK Additions */
 
 .wsk-card--uri {

@@ -73,13 +73,22 @@ ui = component $ render <$> stateful demoState update
       -- Event fields -> EventHandler input
       -- I hope to come back here later and make sense out of this.
       [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> (NewEntry $ fromJust $ demoEntries !! 0))
-               , A.class_ $ A.className "gla-layout--margin-h" ] [
-          WSK.textfield { id: Just "inp-new-gif"
-                        , label: Just "New GIF URI"
-                        , type_: "url"
-                        , floatingLabel: true
-                        }
-      ]
+               , A.class_ $ A.className "gla-layout--margin-h"
+               ]
+               [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
+                 WSK.textfield { id: Just "inp-new-gif"
+                               , label: Just "New GIF URI"
+                               , type_: "url"
+                               , floatingLabel: true
+                               } ]
+               , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
+                 WSK.textfield { id: Just "inp-new-tags"
+                               , label: Just "Tags"
+                               , type_: "text"
+                               , floatingLabel: true
+                               } ]
+               ]
+               -- TODO: Button!
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
