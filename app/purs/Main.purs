@@ -73,7 +73,7 @@ ui = component $ render <$> stateful demoState update
       -- What we want to produce here is a function of
       -- Event fields -> EventHandler input
       -- I hope to come back here later and make sense out of this.
-      [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> (NewEntry $ fromJust $ demoEntries !! 0))
+      [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> newEntry)
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
@@ -102,6 +102,9 @@ ui = component $ render <$> stateful demoState update
 
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
+
+    newEntry :: Action
+    newEntry = NewEntry <<< fromJust $ demoEntries !! 0
 
     entryCard :: Entry -> H.HTML p (m Action)
     entryCard e = H.div
