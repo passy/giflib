@@ -18,6 +18,7 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Data.Date as Date
 import qualified WSK as WSK
 import qualified WSK.Textfield as WSK
+import qualified WSK.Button as WSK
 import qualified Data.StrMap as StrMap
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
@@ -77,7 +78,7 @@ ui = component $ render <$> stateful demoState update
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
                  WSK.textfield { id: Just "inp-new-gif"
-                               , label: Just "New GIF URI"
+                               , label: Just "URI"
                                , type_: "url"
                                , floatingLabel: true
                                } ]
@@ -87,8 +88,12 @@ ui = component $ render <$> stateful demoState update
                                , type_: "text"
                                , floatingLabel: true
                                } ]
+               , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
+                 WSK.button { text: "Add GIF"
+                            , elevation: WSK.ButtonRaised
+                            , ripple: true
+                            } ]
                ]
-               -- TODO: Button!
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
