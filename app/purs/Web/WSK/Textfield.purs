@@ -2,6 +2,7 @@ module WSK.Textfield where
 
 import Data.Monoid
 import Data.Maybe
+import WSK.Internal (mip)
 
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
@@ -29,6 +30,3 @@ textfield t =
         mainClasses =
           [ clsTextfield, clsJsTextfield ] ++
             if t.floatingLabel then [ clsFloatingTextfield ] else []
-
-mip :: forall a b f. (Monoid (f b), Applicative f) => (a -> b) -> Maybe a -> f b
-mip f = maybe mempty (pure <<< f)

@@ -90,6 +90,7 @@ ui = component $ render <$> stateful demoState update
                                } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
                  WSK.button { text: "Add GIF"
+                            , id: Nothing
                             , elevation: WSK.ButtonRaised
                             , ripple: true
                             } ]
