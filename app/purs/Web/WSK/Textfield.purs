@@ -11,7 +11,15 @@ type Textfield = { type_         :: String
                  , id            :: Maybe String
                  , label         :: Maybe String
                  , floatingLabel :: Boolean
+                 , value         :: String
                  }
+
+defaultTextfield = { type_: "text"
+                   , id: Nothing
+                   , label: Nothing
+                   , floatingLabel: true
+                   , value: ""
+                   }
 
 textfield :: forall p i. Textfield -> H.HTML p i
 textfield t =

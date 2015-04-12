@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Functor (($>))
+import Data.Monoid (mempty)
 import Data.Array (map, concat, (!!))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
@@ -28,6 +29,7 @@ import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
+             , newUri  :: String
              }
 
 data Action
@@ -35,7 +37,10 @@ data Action
   | NewEntry Entry
 
 emptyState :: State
-emptyState = { entries: [], tag: Nothing }
+emptyState = { entries: mempty
+             , tag: mempty
+             , newUri: mempty
+             }
 
 demoEntries :: [Entry]
 demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
@@ -51,7 +56,7 @@ demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
               ]
 
 demoState :: State
-demoState = { entries: demoEntries, tag: Just "animals" }
+demoState = emptyState { entries = demoEntries, tag = Just "animals" }
 
 update :: State -> Action -> State
 update s a = updateState a s
@@ -77,17 +82,16 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield { id: Just "inp-new-gif"
-                               , label: Just "URI"
-                               , type_: "url"
-                               , floatingLabel: true
-                               } ]
+                 WSK.textfield $
+                  WSK.defaultTextfield { id = Just "inp-new-gif"
+                                       , label = Just "URI"
+                                       , type_ = "url"
+                                       } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield { id: Just "inp-new-tags"
-                               , label: Just "Tags"
-                               , type_: "text"
-                               , floatingLabel: true
-                               } ]
+                 WSK.textfield $
+                  WSK.defaultTextfield { id = Just "inp-new-tags"
+                                       , label = Just "Tags"
+                                       } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
                  WSK.button { text: "Add GIF"
                             , id: Nothing
