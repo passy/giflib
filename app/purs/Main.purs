@@ -86,7 +86,7 @@ ui = component $ render <$> stateful demoState update
       -- What we want to produce here is a function of
       -- Event fields -> EventHandler input
       -- I hope to come back here later and make sense out of this.
-      [ H.form [ A.onsubmit \_ -> E.preventDefault $> pure newEntry
+      [ H.form [ A.onsubmit \_ -> E.preventDefault $> pure (newEntry st)
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
@@ -114,8 +114,13 @@ ui = component $ render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    newEntry :: Action
-    newEntry = NewEntry <<< fromJust $ demoEntries !! 0
+    -- TODO: Emit a second action to reset the input or do this in updateState
+    newEntry :: State -> Action
+    newEntry st = NewEntry { id: "FIXME"
+                           , tags: st.newTags
+                           , uri: st.newUri
+                           , date: fromJust $ Date.date 2015 Date.February 28
+                           }
 
     entryCard :: Entry -> H.HTML p (m Action)
     entryCard e = H.div
