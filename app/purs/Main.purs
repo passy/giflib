@@ -23,6 +23,7 @@ import qualified WSK.Button as WSK
 import qualified Data.StrMap as StrMap
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
+import Web.Giflib.Internal.Unsafe (unsafePrintId)
 import Control.Monad.Eff.DOM (querySelector, appendChild)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
@@ -65,6 +66,7 @@ update s a = updateState a s
   updateState NoOp = id
   -- TODO: Use lenses!
   updateState (NewEntry e) = \s -> s { entries = e : s.entries }
+  updateState (UpdateNewURI e) = \s -> s { newUri = unsafePrintId e }
 
 ui :: forall p m eff. (Applicative m) => Component p m Action Action
 ui = component $ render <$> stateful demoState update
@@ -79,15 +81,15 @@ ui = component $ render <$> stateful demoState update
       -- What we want to produce here is a function of
       -- Event fields -> EventHandler input
       -- I hope to come back here later and make sense out of this.
-      [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> pure newEntry)
+      [ H.form [ A.onsubmit \_ -> E.preventDefault $> pure newEntry
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield [] $
+                 WSK.textfield [ {- E.onInput $ A.input UpdateNewURI -} ] $
                   WSK.defaultTextfield { id = Just "inp-new-gif"
-                                        , label = Just "URI"
-                                        , type_ = "url"
-                                        } ]
+                                       , label = Just "URI"
+                                       , type_ = "url"
+                                       } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
                  WSK.textfield_ $
                    WSK.defaultTextfield { id = Just "inp-new-tags"
