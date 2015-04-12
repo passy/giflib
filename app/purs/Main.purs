@@ -78,7 +78,7 @@ ui = component $ render <$> stateful demoState update
       -- What we want to produce here is a function of
       -- Event fields -> EventHandler input
       -- I hope to come back here later and make sense out of this.
-      [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> newEntry)
+      [ H.form [ A.onsubmit $ (\_ -> E.preventDefault $> pure newEntry)
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [

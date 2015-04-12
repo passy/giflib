@@ -26,7 +26,7 @@
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
-    "purescript-halogen": "4d788e030c635668254aafe5ca836f1c4072b77c"
+    "purescript-halogen": "2a4e0a428b5c6fef33616c4f384ccbcf26554ecf"
   },
   "resolutions": {
     "purescript-arrays": "~0.3.0",
