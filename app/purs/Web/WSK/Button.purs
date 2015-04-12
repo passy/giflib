@@ -15,6 +15,13 @@ type Button = { elevation :: ButtonElevation
               , text      :: String
               }
 
+defaultButton :: Button
+defaultButton = { elevation: ButtonFlat
+                , id: mempty
+                , ripple: true
+                , text: mempty
+                }
+
 button :: forall p i. Button -> H.HTML p i
 button t =
   H.button ([ A.classes btnClasses ] <> (mip A.id_ t.id))

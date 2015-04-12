@@ -14,6 +14,7 @@ type Textfield = { type_         :: String
                  , value         :: String
                  }
 
+defaultTextfield :: Textfield
 defaultTextfield = { type_: "text"
                    , id: Nothing
                    , label: Nothing

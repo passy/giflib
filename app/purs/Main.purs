@@ -93,11 +93,10 @@ ui = component $ render <$> stateful demoState update
                                        , label = Just "Tags"
                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.button { text: "Add GIF"
-                            , id: Nothing
-                            , elevation: WSK.ButtonRaised
-                            , ripple: true
-                            } ]
+                 WSK.button $
+                  WSK.defaultButton { text = "Add GIF"
+                                    , elevation = WSK.ButtonRaised
+                                    } ]
                ]
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
