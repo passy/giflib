@@ -1,11 +1,12 @@
 module Main where
 
+import Control.Alternative
 import Control.Functor (($>))
-import Data.Monoid (mempty)
 import Data.Array (map, concat, (!!))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
-import Data.String (joinWith)
+import Data.Monoid (mempty)
+import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 
 import Halogen (runUI)
@@ -30,18 +31,21 @@ import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
-             , newUri  :: String
+             , newUri  :: String    -- ^ New URI to be submitted
+             , newTags :: [Tag]     -- ^ New Tags to be submitted
              }
 
 data Action
   = NoOp
   | NewEntry Entry
   | UpdateNewURI String
+  | UpdateNewTags String
 
 emptyState :: State
 emptyState = { entries: mempty
              , tag: mempty
              , newUri: mempty
+             , newTags: mempty
              }
 
 demoEntries :: [Entry]
@@ -67,8 +71,9 @@ update s a = updateState a s
   -- TODO: Use lenses!
   updateState (NewEntry e) = \s -> s { entries = e : s.entries }
   updateState (UpdateNewURI e) = \s -> s { newUri = unsafePrintId e }
+  updateState (UpdateNewTags e) = \s -> s { newTags = unsafePrintId $ processTagInput e }
 
-ui :: forall p m eff. (Applicative m) => Component p m Action Action
+ui :: forall p m eff. (Alternative m) => Component p m Action Action
 ui = component $ render <$> stateful demoState update
   where
   render :: State -> H.HTML p (m Action)
@@ -85,13 +90,13 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield [ {- E.onInput $ A.input UpdateNewURI -} ] $
+                 WSK.textfield [ E.onInput $ A.input UpdateNewURI ] $
                   WSK.defaultTextfield { id = Just "inp-new-gif"
                                        , label = Just "URI"
                                        , type_ = "url"
                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield_ $
+                 WSK.textfield [ E.onInput $ A.input UpdateNewTags ] $
                    WSK.defaultTextfield { id = Just "inp-new-tags"
                                         , label = Just "Tags"
                                         } ]
@@ -140,6 +145,11 @@ formatEntryDatetime e = show e.date
 
 formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
+
+processTagInput :: String -> [Tag]
+processTagInput = trim >>> split " "
+
+-- Application Main
 
 main = do
   Tuple node driver <- runUI ui

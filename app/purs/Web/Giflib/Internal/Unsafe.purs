@@ -11,9 +11,7 @@ import Control.Monad.Eff (Eff())
 foreign import unsafePerformEff
     """
     function unsafePerformEff(f) {
-      return function() {
-        return f;
-      };
+      return f();
     }
     """ :: forall a eff. Eff eff a -> a
 
