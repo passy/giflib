@@ -7,7 +7,6 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.String (joinWith)
 import Data.Tuple (Tuple(..))
-import Debug.Trace
 
 import Halogen (runUI)
 import Halogen.Component (component, Component(..))
@@ -16,6 +15,7 @@ import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Halogen.HTML.Events.Handler as E
+import qualified Halogen.HTML.Events.Forms as E
 import qualified Data.Date as Date
 import qualified WSK as WSK
 import qualified WSK.Textfield as WSK
@@ -35,6 +35,7 @@ type State = { entries :: [Entry]   -- ^ All entries matching the tag
 data Action
   = NoOp
   | NewEntry Entry
+  | UpdateNewURI String
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -82,21 +83,21 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield $
+                 WSK.textfield [] $
                   WSK.defaultTextfield { id = Just "inp-new-gif"
-                                       , label = Just "URI"
-                                       , type_ = "url"
-                                       } ]
+                                        , label = Just "URI"
+                                        , type_ = "url"
+                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield $
-                  WSK.defaultTextfield { id = Just "inp-new-tags"
-                                       , label = Just "Tags"
-                                       } ]
+                 WSK.textfield_ $
+                   WSK.defaultTextfield { id = Just "inp-new-tags"
+                                        , label = Just "Tags"
+                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
                  WSK.button $
-                  WSK.defaultButton { text = "Add GIF"
-                                    , elevation = WSK.ButtonRaised
-                                    } ]
+                   WSK.defaultButton { text = "Add GIF"
+                                     , elevation = WSK.ButtonRaised
+                                     } ]
                ]
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]

@@ -16,20 +16,20 @@ type Textfield = { type_         :: String
 
 defaultTextfield :: Textfield
 defaultTextfield = { type_: "text"
-                   , id: Nothing
-                   , label: Nothing
+                   , id: mempty
+                   , label: mempty
                    , floatingLabel: true
-                   , value: ""
+                   , value: mempty
                    }
 
-textfield :: forall p i. Textfield -> H.HTML p i
-textfield t =
+textfield :: forall p i. [A.Attr i] -> Textfield -> H.HTML p i
+textfield attrs t =
   H.div [ A.classes mainClasses ]
     ([ H.input ([ A.class_ clsTextfieldInput
-               , A.type_ t.type_
-               ] <> (mip A.id_ t.id)) []
-     ] <>
-     (mip (\lbl -> H.label ([ A.class_ clsLabel ] <> (mip A.for t.id)) [ H.text lbl ]) t.label)
+                , A.type_ t.type_
+                ] <> (mip A.id_ t.id) <> attrs) []
+     ] <> (mip (\lbl ->
+       H.label ([ A.class_ clsLabel ] <> (mip A.for t.id)) [ H.text lbl ]) t.label)
     )
   where clsTextfield         = A.className "wsk-textfield"
         clsJsTextfield       = A.className "wsk-js-textfield"
@@ -39,3 +39,6 @@ textfield t =
         mainClasses =
           [ clsTextfield, clsJsTextfield ] ++
             if t.floatingLabel then [ clsFloatingTextfield ] else []
+
+textfield_ :: forall p i. Textfield -> H.HTML p i
+textfield_ = textfield mempty
