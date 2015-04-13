@@ -19,18 +19,16 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "purescript-datetime": "~0.3.1",
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
-    "purescript-halogen": "2a4e0a428b5c6fef33616c4f384ccbcf26554ecf"
+    "purescript-halogen": "2a4e0a428b5c6fef33616c4f384ccbcf26554ecf",
+    "purescript-lens": "~0.7"
   },
   "resolutions": {
-    "purescript-arrays": "~0.3.0",
-    "purescript-tuples": "~0.3.0",
-    "purescript-monoid": "~0.2.0"
+    "purescript-arrays": "~0.3.3"
   }
 }

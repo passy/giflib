@@ -68,7 +68,6 @@ update :: State -> Action -> State
 update s a = updateState a s
   where
   updateState NoOp = id
-  -- TODO: Use lenses!
   updateState (NewEntry e) = \s -> s { entries = e : s.entries }
   updateState (UpdateNewURI e) = \s -> s { newUri = unsafePrintId e }
   updateState (UpdateNewTags e) = \s -> s { newTags = unsafePrintId $ processTagInput e }
@@ -79,13 +78,6 @@ ui = component $ render <$> stateful demoState update
   render :: State -> H.HTML p (m Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
-      -- Oh hai, this works, but I'm gonna be honest, I don't quite understand
-      -- how that signalling works, in particular the ($>) operator which
-      -- discards the value on its left-hand side:
-      -- ($>) :: forall f a b. (Functor f) => f a -> b -> f b
-      -- What we want to produce here is a function of
-      -- Event fields -> EventHandler input
-      -- I hope to come back here later and make sense out of this.
       [ H.form [ A.onsubmit \_ -> E.preventDefault $> pure (newEntry st)
                , A.class_ $ A.className "gla-layout--margin-h"
                ]

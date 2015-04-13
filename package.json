@@ -29,6 +29,7 @@
     "gulp-browserify": "^0.5.1",
     "gulp-purescript": "0.0.12",
     "http-server": "^0.7.5",
+    "node-uuid": "^1.4.3",
     "purescript-bin": "^0.1.2",
     "virtual-dom": "^2.0.1"
   }
