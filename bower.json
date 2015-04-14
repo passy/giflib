@@ -26,9 +26,18 @@
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
     "purescript-halogen": "2a4e0a428b5c6fef33616c4f384ccbcf26554ecf",
-    "purescript-lens": "~0.7"
+    "purescript-lens": "~0.7",
+    "purescript-node-uuid": "~0.5.0",
+    "purescript-argonaut": "passy/purescript-argonaut#version-bump"
   },
   "resolutions": {
-    "purescript-arrays": "~0.3.3"
+    "purescript-arrays": "~0.3.3",
+    "purescript-profunctor": "~0.2.1",
+    "purescript-bifunctors": "~0.3.1",
+    "purescript-contravariant": "~0.1.0",
+    "purescript-lens": "~0.7",
+    "purescript-const": "~0.4.0",
+    "purescript-argonaut": "version-bump",
+    "purescript-optic": "~0.5.0"
   }
 }

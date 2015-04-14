@@ -30,6 +30,7 @@
     "gulp-purescript": "0.0.12",
     "http-server": "^0.7.5",
     "node-uuid": "^1.4.3",
+    "purescript-argonaut": "git://github.com/passy/purescript-argonaut.git#version-bump",
     "purescript-bin": "^0.1.2",
     "virtual-dom": "^2.0.1"
   }
