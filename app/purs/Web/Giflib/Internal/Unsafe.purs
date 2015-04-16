@@ -1,6 +1,7 @@
 module Web.Giflib.Internal.Unsafe
   ( unsafePerformEff
   , unsafePrintId
+  , undefined
   ) where
 
 import Data.Foreign (Foreign(), toForeign)
@@ -21,6 +22,8 @@ foreign import showForeign
       return JSON.stringify(a);
     }
   """ :: Foreign -> String
+
+foreign import undefined :: forall a. a
 
 unsafePrintId :: forall a. a -> a
 unsafePrintId o = unsafePerformEff $ do

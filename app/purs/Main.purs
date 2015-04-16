@@ -9,7 +9,7 @@ import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 
-import Halogen (runUI)
+import Halogen (runUI, HalogenEffects())
 import Halogen.Component (component, Component(..))
 import Halogen.Signal (SF1(..), stateful)
 import qualified Halogen.HTML as H
@@ -17,14 +17,17 @@ import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Forms as E
+import qualified Halogen.HTML.Events.Monad as E
 import qualified Data.Date as Date
 import qualified WSK as WSK
 import qualified WSK.Textfield as WSK
 import qualified WSK.Button as WSK
 import qualified Data.StrMap as StrMap
+import qualified Node.UUID as UUID
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
-import Web.Giflib.Internal.Unsafe (unsafePrintId)
+import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
+import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.DOM (querySelector, appendChild)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
@@ -37,9 +40,12 @@ type State = { entries :: [Entry]   -- ^ All entries matching the tag
 
 data Action
   = NoOp
-  | NewEntry Entry
+  | NewEntry
   | UpdateNewURI String
   | UpdateNewTags String
+
+data Request
+  = AddNewEntry State
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -65,12 +71,26 @@ demoState :: State
 demoState = emptyState { entries = demoEntries, tag = Just "animals" }
 
 update :: State -> Action -> State
-update s a = updateState a s
+update s' a = updateState a s'
   where
-  updateState NoOp = id
-  updateState (NewEntry e) = \s -> s { entries = e : s.entries }
-  updateState (UpdateNewURI e) = \s -> s { newUri = unsafePrintId e }
-  updateState (UpdateNewTags e) = \s -> s { newTags = unsafePrintId $ processTagInput e }
+  updateState NoOp s = s
+  updateState NewEntry s =
+    -- uuid <- UUID.v4
+    let e = { id: "FAKE" -- UUID.showuuid uuid
+            , tags: s.newTags
+            , uri: s.newUri
+            , date: fromJust $ Date.date 2015 Date.February 28
+            }
+    in
+    s { entries = (unsafePrintId e) : s.entries }
+  updateState (UpdateNewURI e) s = s { newUri = unsafePrintId e }
+  updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
+
+-- | Handle a request to an external service
+handler :: forall eff.
+  Request ->
+  E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff)) Action
+handler (AddNewEntry e) = undefined
 
 ui :: forall p m eff. (Alternative m) => Component p m Action Action
 ui = component $ render <$> stateful demoState update
@@ -78,7 +98,7 @@ ui = component $ render <$> stateful demoState update
   render :: State -> H.HTML p (m Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
-      [ H.form [ A.onsubmit \_ -> E.preventDefault $> pure (newEntry st)
+      [ H.form [ A.onsubmit \_ -> E.preventDefault $> (pure NewEntry)
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
@@ -105,14 +125,6 @@ ui = component $ render <$> stateful demoState update
 
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
-
-    -- TODO: Emit a second action to reset the input or do this in updateState
-    newEntry :: State -> Action
-    newEntry st = NewEntry { id: "FIXME"
-                           , tags: st.newTags
-                           , uri: st.newUri
-                           , date: fromJust $ Date.date 2015 Date.February 28
-                           }
 
     entryCard :: Entry -> H.HTML p (m Action)
     entryCard e = H.div
