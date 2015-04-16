@@ -92,13 +92,13 @@ handler :: forall eff.
   E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff)) Action
 handler (AddNewEntry e) = undefined
 
-ui :: forall p m eff. (Alternative m) => Component p m Action Action
+ui :: forall p eff. Component p (E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff))) Action Action
 ui = component $ render <$> stateful demoState update
   where
-  render :: State -> H.HTML p (m Action)
+  render :: State -> H.HTML p (E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff)) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
-      [ H.form [ A.onsubmit \_ -> E.preventDefault $> (pure NewEntry)
+      [ H.form [ A.onsubmit \_ -> {- E.preventDefault $> -} pure $ handler $ AddNewEntry st
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
@@ -126,7 +126,7 @@ ui = component $ render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    entryCard :: Entry -> H.HTML p (m Action)
+    entryCard :: Entry -> H.HTML p (E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff)) Action)
     entryCard e = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
