@@ -42,7 +42,7 @@ type State = { entries :: [Entry]   -- ^ All entries matching the tag
 
 data Action
   = NoOp
-  | NewEntry
+  | NewEntry Entry
   | UpdateNewURI String
   | UpdateNewTags String
 
@@ -78,15 +78,7 @@ update :: State -> Action -> State
 update s' a = updateState a s'
   where
   updateState NoOp s = s
-  updateState NewEntry s =
-    -- uuid <- UUID.v4
-    let e = { id: "FAKE" -- UUID.showuuid uuid
-            , tags: s.newTags
-            , uri: s.newUri
-            , date: fromJust $ Date.date 2015 Date.February 28
-            }
-    in
-    s { entries = (unsafePrintId e) : s.entries }
+  updateState (NewEntry e) s = s { entries = (unsafePrintId e) : s.entries }
   updateState (UpdateNewURI e) s = s { newUri = unsafePrintId e }
   updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
 
@@ -94,7 +86,13 @@ update s' a = updateState a s'
 handler :: forall eff.
   Request ->
   (AppEffects eff) Action
-handler (AddNewEntry e) = undefined
+handler (AddNewEntry s) = do
+  uuid <- UUID.v4
+  return $ NewEntry { id: UUID.showuuid uuid
+         , tags: s.newTags
+         , uri: s.newUri
+         , date: fromJust $ Date.date 2015 Date.February 28
+         }
 
 ui :: forall p eff. Component p (AppEffects eff) Action Action
 ui = component $ render <$> stateful demoState update
