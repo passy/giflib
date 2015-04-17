@@ -87,13 +87,13 @@ update s' a = updateState a s'
 handler :: forall eff.
   Request ->
   E.Event (AppEff eff) Action
-handler (AddNewEntry s) = undefined -- do
-  -- uuid <- UUID.v4
-  -- return $ NewEntry { id: "fake" -- UUID.showuuid uuid
-  --        , tags: s.newTags
-  --        , uri: s.newUri
-  --        , date: fromJust $ Date.date 2015 Date.February 28
-  --        }
+handler (AddNewEntry s) = do
+  uuid <- liftEff $ UUID.v4
+  E.yield $ NewEntry { id: UUID.showuuid uuid
+                     , tags: s.newTags
+                     , uri: s.newUri
+                     , date: fromJust $ Date.date 2015 Date.February 28
+                     }
 
 ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
 ui = component $ render <$> stateful demoState update
