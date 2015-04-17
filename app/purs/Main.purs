@@ -31,6 +31,7 @@ import Control.Monad.Eff (Eff())
 import Data.DOM.Simple.Window (document, globalWindow)
 import Data.DOM.Simple.Document ()
 import Data.DOM.Simple.Element (querySelector, appendChild)
+import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 
@@ -49,7 +50,7 @@ data Action
 data Request
   = AddNewEntry State
 
-type AppEffects eff = E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff))
+type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff | eff)
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -85,19 +86,19 @@ update s' a = updateState a s'
 -- | Handle a request to an external service
 handler :: forall eff.
   Request ->
-  (AppEffects eff) Action
+  E.Event (AppEff eff) Action
 handler (AddNewEntry s) = do
-  uuid <- UUID.v4
-  return $ NewEntry { id: UUID.showuuid uuid
-         , tags: s.newTags
-         , uri: s.newUri
-         , date: fromJust $ Date.date 2015 Date.February 28
-         }
+  uuid <- liftEff $ UUID.v4
+  E.yield $ NewEntry { id: UUID.showuuid uuid
+                     , tags: s.newTags
+                     , uri: s.newUri
+                     , date: fromJust $ Date.date 2015 Date.February 28
+                     }
 
-ui :: forall p eff. Component p (AppEffects eff) Action Action
+ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
 ui = component $ render <$> stateful demoState update
   where
-  render :: State -> H.HTML p ((AppEffects eff) Action)
+  render :: State -> H.HTML p (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
       [ H.form [ A.onsubmit \_ -> {- E.preventDefault $> -} pure $ handler $ AddNewEntry st
@@ -128,7 +129,7 @@ ui = component $ render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    entryCard :: Entry -> H.HTML p ((AppEffects eff) Action)
+    entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
     entryCard e = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
