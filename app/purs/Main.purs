@@ -28,7 +28,9 @@ import qualified Node.UUID as UUID
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
 import Control.Monad.Eff (Eff())
-import Control.Monad.Eff.DOM (querySelector, appendChild)
+import Data.DOM.Simple.Window (document, globalWindow)
+import Data.DOM.Simple.Document ()
+import Data.DOM.Simple.Element (querySelector, appendChild)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 
 
@@ -164,7 +166,9 @@ processTagInput = trim >>> split " "
 
 main = do
   Tuple node driver <- runUI ui
-  el <- querySelector "#app-main"
+
+  doc <- document globalWindow
+  el <- querySelector "#app-main" doc
   case el of
     Just e -> appendChild node e
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
