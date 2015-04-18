@@ -2,7 +2,13 @@ module Main where
 
 import Control.Alternative
 import Control.Functor (($>))
+import Control.Monad.Eff (Eff())
+import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 import Data.Array (map, concat, (!!))
+import Data.DOM.Simple.Document ()
+import Data.DOM.Simple.Element (querySelector, appendChild)
+import Data.DOM.Simple.Window (document, globalWindow)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
@@ -27,13 +33,7 @@ import qualified Node.UUID as UUID
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
-import Control.Monad.Eff (Eff())
-import Data.DOM.Simple.Window (document, globalWindow)
-import Data.DOM.Simple.Document ()
-import Data.DOM.Simple.Element (querySelector, appendChild)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (error, throwException, Exception(..))
-
+import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
@@ -164,10 +164,12 @@ processTagInput = trim >>> split " "
 -- Application Main
 
 main = do
+  trace "Booting. Beep. Boop."
   Tuple node driver <- runUI ui
 
   doc <- document globalWindow
   el <- querySelector "#app-main" doc
   case el of
-    Just e -> appendChild node e
+    Just e -> appendChild e node
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
+  trace "Up and running."
