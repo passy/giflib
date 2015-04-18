@@ -2,7 +2,13 @@ module Main where
 
 import Control.Alternative
 import Control.Functor (($>))
+import Control.Monad.Eff (Eff())
+import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 import Data.Array (map, concat, (!!))
+import Data.DOM.Simple.Document ()
+import Data.DOM.Simple.Element (querySelector, appendChild)
+import Data.DOM.Simple.Window (document, globalWindow)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
@@ -27,12 +33,7 @@ import qualified Node.UUID as UUID
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
-import Control.Monad.Eff (Eff())
-import Data.DOM.Simple.Window (document, globalWindow)
-import Data.DOM.Simple.Document ()
-import Data.DOM.Simple.Element (querySelector, appendChild)
-import Control.Monad.Eff.Exception (error, throwException, Exception(..))
-
+import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
@@ -42,14 +43,14 @@ type State = { entries :: [Entry]   -- ^ All entries matching the tag
 
 data Action
   = NoOp
-  | NewEntry
+  | NewEntry Entry
   | UpdateNewURI String
   | UpdateNewTags String
 
 data Request
   = AddNewEntry State
 
-type AppEffects eff = E.Event (HalogenEffects (uuid :: UUID.UUIDEff | eff))
+type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff | eff)
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -78,28 +79,26 @@ update :: State -> Action -> State
 update s' a = updateState a s'
   where
   updateState NoOp s = s
-  updateState NewEntry s =
-    -- uuid <- UUID.v4
-    let e = { id: "FAKE" -- UUID.showuuid uuid
-            , tags: s.newTags
-            , uri: s.newUri
-            , date: fromJust $ Date.date 2015 Date.February 28
-            }
-    in
-    s { entries = (unsafePrintId e) : s.entries }
+  updateState (NewEntry e) s = s { entries = (unsafePrintId e) : s.entries }
   updateState (UpdateNewURI e) s = s { newUri = unsafePrintId e }
   updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
 
 -- | Handle a request to an external service
 handler :: forall eff.
   Request ->
-  (AppEffects eff) Action
-handler (AddNewEntry e) = undefined
+  E.Event (AppEff eff) Action
+handler (AddNewEntry s) = do
+  uuid <- liftEff $ UUID.v4
+  E.yield $ NewEntry { id: UUID.showuuid uuid
+                     , tags: s.newTags
+                     , uri: s.newUri
+                     , date: fromJust $ Date.date 2015 Date.February 28
+                     }
 
-ui :: forall p eff. Component p (AppEffects eff) Action Action
+ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
 ui = component $ render <$> stateful demoState update
   where
-  render :: State -> H.HTML p ((AppEffects eff) Action)
+  render :: State -> H.HTML p (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
       [ H.form [ A.onsubmit \_ -> {- E.preventDefault $> -} pure $ handler $ AddNewEntry st
@@ -130,7 +129,7 @@ ui = component $ render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    entryCard :: Entry -> H.HTML p ((AppEffects eff) Action)
+    entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
     entryCard e = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
@@ -165,10 +164,12 @@ processTagInput = trim >>> split " "
 -- Application Main
 
 main = do
+  trace "Booting. Beep. Boop."
   Tuple node driver <- runUI ui
 
   doc <- document globalWindow
   el <- querySelector "#app-main" doc
   case el of
-    Just e -> appendChild node e
+    Just e -> appendChild e node
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
+  trace "Up and running."
