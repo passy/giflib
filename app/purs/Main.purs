@@ -50,7 +50,7 @@ data Action
 data Request
   = AddNewEntry State
 
-type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff | eff)
+type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff, now :: Date.Now | eff)
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -88,11 +88,12 @@ handler :: forall eff.
   Request ->
   E.Event (AppEff eff) Action
 handler (AddNewEntry s) = do
-  uuid <- liftEff $ UUID.v4
+  uuid <- liftEff UUID.v4
+  now <- liftEff Date.now
   E.yield $ NewEntry { id: UUID.showuuid uuid
                      , tags: s.newTags
                      , uri: s.newUri
-                     , date: fromJust $ Date.date 2015 Date.February 28
+                     , date: now
                      }
 
 ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
