@@ -101,7 +101,7 @@ ui = component $ render <$> stateful demoState update
   render :: State -> H.HTML p (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
-      [ H.form [ A.onsubmit \_ -> {- E.preventDefault $> -} pure $ handler $ AddNewEntry st
+      [ H.form [ A.onsubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
