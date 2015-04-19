@@ -60,17 +60,20 @@ emptyState = { entries: mempty
              }
 
 demoEntries :: [Entry]
-demoEntries = [ { id: "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
+demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
                 , uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                 , tags: [ "hamster", "party", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.January 1
                 }
-              , { id: "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
+              , { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
                 , uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
                 , tags: [ "cat", "wiggle", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.February 28
                 }
               ]
+  where
+    decodeUuid :: String -> UUID.UUID
+    decodeUuid = UUID.parse >>> UUID.unparse
 
 demoState :: State
 demoState = emptyState { entries = demoEntries, tag = Just "animals" }
@@ -90,7 +93,7 @@ handler :: forall eff.
 handler (AddNewEntry s) = do
   uuid <- liftEff UUID.v4
   now <- liftEff Date.now
-  E.yield $ NewEntry { id: UUID.showuuid uuid
+  E.yield $ NewEntry { id: uuid
                      , tags: s.newTags
                      , uri: s.newUri
                      , date: now
