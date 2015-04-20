@@ -26,11 +26,10 @@ button :: forall p i. Button -> H.HTML p i
 button t =
   H.button ([ A.classes btnClasses ] <> (mip A.id_ t.id))
            [ H.text t.text ]
-  where btnClasses =
-    A.className <$> ([ "wsk-button"
-                     , "wsk-js-button"
-                     ] <> btnRaisedClass
-                       <> btnRippleClass)
+  where btnClasses = A.className <$> ([ "wsk-button"
+                                      , "wsk-js-button"
+                                      ] <> btnRaisedClass
+                                        <> btnRippleClass)
         btnRaisedClass = case t.elevation of
                               ButtonRaised -> pure "wsk-button--raised"
                               ButtonFlat   -> mempty
