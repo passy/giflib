@@ -25,9 +25,9 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Forms as E
 import qualified Halogen.HTML.Events.Monad as E
 import qualified Data.Date as Date
-import qualified WSK as WSK
-import qualified WSK.Textfield as WSK
-import qualified WSK.Button as WSK
+import qualified MDL as MDL
+import qualified MDL.Textfield as MDL
+import qualified MDL.Button as MDL
 import qualified Data.StrMap as StrMap
 import qualified Node.UUID as UUID
 
@@ -109,20 +109,20 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield [ E.onInput $ A.input UpdateNewURI ] $
-                  WSK.defaultTextfield { id = Just "inp-new-gif"
+                 MDL.textfield [ E.onInput $ A.input UpdateNewURI ] $
+                  MDL.defaultTextfield { id = Just "inp-new-gif"
                                        , label = Just "URI"
                                        , type_ = "url"
                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.textfield [ E.onInput $ A.input UpdateNewTags ] $
-                   WSK.defaultTextfield { id = Just "inp-new-tags"
+                 MDL.textfield [ E.onInput $ A.input UpdateNewTags ] $
+                   MDL.defaultTextfield { id = Just "inp-new-tags"
                                         , label = Just "Tags"
                                         } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 WSK.button $
-                   WSK.defaultButton { text = "Add GIF"
-                                     , elevation = WSK.ButtonRaised
+                 MDL.button $
+                   MDL.defaultButton { text = "Add GIF"
+                                     , elevation = MDL.ButtonRaised
                                      } ]
                ]
       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
@@ -138,20 +138,20 @@ ui = component $ render <$> stateful demoState update
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
         -- https://github.com/Matt-Esch/virtual-dom/blob/7cd99a160f8d7c9953e71e0b26a740dae40e55fc/docs/vnode.md#arguments
-        [ A.classes [WSK.card, WSK.shadow 3]
+        [ A.classes [MDL.card, MDL.shadow 3]
         ]
-        [ H.div [ A.class_ WSK.cardImageContainer
+        [ H.div [ A.class_ MDL.cardImageContainer
                 , A.style $ backgroundImage e.uri
                 ] []
-        , H.div [ A.class_ WSK.cardHeading ]
+        , H.div [ A.class_ MDL.cardHeading ]
             [ H.h2
-                [ A.class_ WSK.cardHeadingText ] [ H.text $ formatEntryTags e ]
+                [ A.class_ MDL.cardHeadingText ] [ H.text $ formatEntryTags e ]
             ]
-        , H.div [ A.class_ WSK.cardCaption ] [ H.text $ formatEntryDatetime e ]
-        , H.div [ A.class_ WSK.cardBottom ]
+        , H.div [ A.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ A.class_ MDL.cardBottom ]
             [ H.a
                 [ A.href e.uri
-                , A.class_ WSK.cardUri
+                , A.class_ MDL.cardUri
                 , A.target "_blank" ] [ H.text e.uri ]
             ]
         ]

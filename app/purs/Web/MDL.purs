@@ -1,4 +1,4 @@
-module WSK
+module MDL
   ( card
   , cardImageContainer
   , cardHeading
@@ -13,25 +13,25 @@ where
 import Halogen.HTML.Attributes (ClassName(), className)
 
 card :: ClassName
-card = className "wsk-card"
+card = className "mdl-card"
 
 cardImageContainer :: ClassName
-cardImageContainer = className "wsk-card--img-container"
+cardImageContainer = className "mdl-card--img-container"
 
 cardHeading :: ClassName
-cardHeading = className "wsk-card--heading"
+cardHeading = className "mdl-card--heading"
 
 cardHeadingText :: ClassName
-cardHeadingText = className "wsk-card--heading-text"
+cardHeadingText = className "mdl-card--heading-text"
 
 cardCaption :: ClassName
-cardCaption = className "wsk-card--caption"
+cardCaption = className "mdl-card--caption"
 
 cardBottom :: ClassName
-cardBottom = className "wsk-card--bottom"
+cardBottom = className "mdl-card--bottom"
 
 cardUri :: ClassName
-cardUri = className "wsk-card--uri"
+cardUri = className "mdl-card--uri"
 
 shadow :: Number -> ClassName
-shadow z = className $ "wsk-shadow--z" ++ (show z)
+shadow z = className $ "mdl-shadow--z" ++ (show z)
