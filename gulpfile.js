@@ -6,11 +6,8 @@ var purescript = require('gulp-purescript');
 var browserify = require('gulp-browserify');
 
 var swallowError = function (error) {
-    console.log(error.toString());
+    console.error(error.toString());
     this.emit('end');
-};
-
-var noop = function () {
 };
 
 var build = function (errorHandler) {
@@ -22,13 +19,12 @@ var build = function (errorHandler) {
         output: 'app.js',
         main: true
     }))
-    .on('error', errorHandler || noop)
+    .on('error', errorHandler)
     .pipe(browserify({}))
     .pipe(gulp.dest('app/js/'));
 };
 
-gulp.task('build', build);
-gulp.task('buildSwallow', build.bind(null, swallowError));
+gulp.task('build', build.bind(null, swallowError));
 
 gulp.task('clean', del.bind(null, 'js/app.js'));
 

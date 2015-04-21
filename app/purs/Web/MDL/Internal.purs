@@ -1,4 +1,4 @@
-module WSK.Internal where
+module MDL.Internal where
 
 import Data.Maybe
 import Data.Monoid

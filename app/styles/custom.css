@@ -14,7 +14,7 @@
   flex-wrap: wrap;
 }
 
-.gla-card-holder .wsk-card {
+.gla-card-holder .mdl-card {
   margin: 20px;
   min-width: 330px;
   height: auto;
@@ -29,9 +29,15 @@
   margin-right: 0;
 }
 
-/* WSK Additions */
+/* MDL Additions */
 
-.wsk-card--uri {
+.mdl-card--uri {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.mdl-layout-title a, button a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
 }
