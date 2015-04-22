@@ -25,7 +25,7 @@
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
-    "purescript-halogen": "9d2348a4eb42eace19ecec2b5c7af224cbcb30ed",
+    "purescript-halogen": "ce1b0a0384cd1bca1045ccf17bc89f9d6f06301b",
     "purescript-lens": "~0.7",
     "purescript-node-uuid": "~0.5.0",
     "purescript-argonaut": "passy/purescript-argonaut#version-bump"
