@@ -19,7 +19,12 @@
     "test",
     "tests"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "purescript-arrays": "~0.4.0",
+    "purescript-datetime": "~0.5.2",
+    "purescript-exceptions": "~0.3.0",
+    "purescript-foreign": "~0.5.0"
+  },
   "devDependencies": {
     "purescript-datetime": "~0.3.1",
     "purescript-arrays": "~0.2.1",
@@ -31,14 +36,24 @@
     "purescript-argonaut": "passy/purescript-argonaut#version-bump"
   },
   "resolutions": {
-    "purescript-arrays": "~0.3.3",
+    "purescript-arrays": "~0.3.2",
     "purescript-profunctor": "~0.2.1",
-    "purescript-bifunctors": "~0.3.1",
+    "purescript-bifunctors": "~0.3.0",
     "purescript-lens": "~0.7",
     "purescript-const": "~0.4.0",
     "purescript-argonaut": "version-bump",
     "purescript-contravariant": "~0.1.0",
     "purescript-optic": "~0.5.0",
-    "purescript-aff": "~0.9.0"
+    "purescript-aff": "~0.9.0",
+    "purescript-datetime": "~0.5.2",
+    "purescript-tuples": "~0.4.0",
+    "purescript-maybe": "~0.3.0",
+    "purescript-control": "~0.3.0",
+    "purescript-monoid": "~0.3.0",
+    "purescript-either": "~0.2.0",
+    "purescript-foreign": "~0.5.0",
+    "purescript-foldable-traversable": "~0.4.0",
+    "purescript-exceptions": "~0.3.0",
+    "purescript-integers": "~0.2.0"
   }
 }
