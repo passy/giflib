@@ -31,7 +31,7 @@ gulp.task('build', build.bind(null, swallowError));
 gulp.task('clean', del.bind(null, ['tmp', 'js/app.js']));
 
 gulp.task('watch', function () {
-    gulp.watch(['app/purs/*.purs', 'app/purs/**/*.purs'], ['buildSwallow']);
+    gulp.watch(['app/purs/*.purs', 'app/purs/**/*.purs'], ['build']);
 });
 
 gulp.task('default', ['clean', 'build']);

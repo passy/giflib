@@ -33,6 +33,7 @@ import qualified Node.UUID as UUID
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
+import Web.Firebase (newFirebase)
 import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
@@ -170,6 +171,8 @@ processTagInput = trim >>> split " "
 main = do
   trace "Booting. Beep. Boop."
   Tuple node driver <- runUI ui
+
+  let fb = newFirebase "https://giflib-web.firebaseio.com/"
 
   doc <- document globalWindow
   el <- querySelector "#app-main" doc

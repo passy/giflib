@@ -2,3 +2,5 @@ node_modules
 bower_components
 js
 *.tix
+/tmp
+npm-debug.log
