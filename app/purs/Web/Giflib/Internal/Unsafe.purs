@@ -10,17 +10,17 @@ import Control.Monad.Eff (Eff())
 
 
 foreign import unsafePerformEff
-    """
-    function unsafePerformEff(f) {
-      return f();
-    }
-    """ :: forall a eff. Eff eff a -> a
+  """
+  function unsafePerformEff(f) {
+    return f();
+  }
+  """ :: forall a eff. Eff eff a -> a
 
 foreign import showForeign
   """
-    function showForeign(a){
-      return JSON.stringify(a);
-    }
+  function showForeign(a) {
+    return JSON.stringify(a);
+  }
   """ :: Foreign -> String
 
 foreign import undefined :: forall a. a
