@@ -30,10 +30,10 @@ import qualified MDL.Textfield as MDL
 import qualified MDL.Button as MDL
 import qualified Data.StrMap as StrMap
 import qualified Node.UUID as UUID
+import qualified Web.Firebase as FB
 
 import Web.Giflib.Types (URI(), Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
-import Web.Firebase (newFirebase)
 import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
@@ -172,7 +172,9 @@ main = do
   trace "Booting. Beep. Boop."
   Tuple node driver <- runUI ui
 
-  let fb = newFirebase "https://giflib-web.firebaseio.com/"
+  fb <- FB.newFirebase "https://giflib-web.firebaseio.com/"
+  children <- FB.child "entries" fb
+  FB.printVals children
 
   doc <- document globalWindow
   el <- querySelector "#app-main" doc
