@@ -15,9 +15,11 @@ var build = function (errorHandler) {
         'app/purs/*.purs',
         'app/purs/**/*.purs',
         'bower_components/purescript-*/src/**/*.purs',
-    ]).pipe(purescript.psc({
-        output: 'app.js',
-        main: true
+    ]).pipe(purescript.pscMake({
+        output: 'tmp',
+        main: true,
+        noOpts: true,
+        noMagicDo: true
     }))
     .on('error', errorHandler)
     .pipe(browserify({}))
@@ -26,7 +28,7 @@ var build = function (errorHandler) {
 
 gulp.task('build', build.bind(null, swallowError));
 
-gulp.task('clean', del.bind(null, 'js/app.js'));
+gulp.task('clean', del.bind(null, ['tmp', 'js/app.js']));
 
 gulp.task('watch', function () {
     gulp.watch(['app/purs/*.purs', 'app/purs/**/*.purs'], ['buildSwallow']);
