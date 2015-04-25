@@ -8,7 +8,7 @@ PureScript and Halogen.
 ```bash
 $ bower install
 $ npm install
-$ npm install -g purescript
+$ npm run build
 ```
 
 ## Development
@@ -18,8 +18,4 @@ $ npm install -g purescript
 $ npm run watch
 $ npm run serve
 $ open http://localhost:8080
-
-# Repl'ing
-$ npm run repl
-> :i Main
 ```

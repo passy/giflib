@@ -2,42 +2,27 @@
 
 var gulp = require('gulp');
 var del = require('del');
-var purescript = require('gulp-purescript');
-var browserify = require('gulp-browserify');
+var proc = require('child_process');
+var fs = require('fs');
+var mkdirp = require('mkdirp');
 
-var swallowError = function (error) {
-    console.error(error.toString());
-    this.emit('end');
-};
-
-var build = function (errorHandler) {
-    var pscMake = purescript.psc({
-        main: true,
-        noOpts: false,
-        noMagicDo: false,
-        output: 'app.js'
-    });
-
-    pscMake.on('error', function(e) {
-        console.error(e.message);
-        pscMake.end();
-    });
-
-    return gulp.src([
-        'app/purs/*.purs',
-        'app/purs/**/*.purs',
-        'bower_components/purescript-*/src/**/*.purs',
-    ]).pipe(pscMake)
-    .pipe(browserify({}))
-    .pipe(gulp.dest('app/js/'));
-};
-
-gulp.task('build', build.bind(null, swallowError));
-
-gulp.task('clean', del.bind(null, ['tmp', 'purs/js/app.js']));
-
-gulp.task('watch', function () {
-    gulp.watch(['app/purs/*.purs', 'app/purs/**/*.purs'], ['build']);
+gulp.task('compile', function () {
+    mkdirp.sync('dist/js/');
+    var out = proc.execSync('node_modules/.bin/pulp browserify');
+    fs.writeFileSync('dist/js/app.js', out);
 });
 
-gulp.task('default', ['clean', 'build']);
+gulp.task('copy', function () {
+    return gulp.src([
+        'bower_components',
+        'public'
+    ], { base: '.' })
+        .pipe(gulp.dest('dist/'));
+});
+
+gulp.task('clean', function () {
+    return del.bind(null, ['dist']);
+});
+
+gulp.task('build', ['clean', 'copy', 'compile']);
+gulp.task('default', ['build']);

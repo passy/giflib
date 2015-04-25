@@ -35,7 +35,8 @@
     "purescript-lens": "~0.7",
     "purescript-node-uuid": "~0.5.0",
     "purescript-argonaut": "passy/purescript-argonaut#version-bump",
-    "purescript-aff": "~0.10.1"
+    "purescript-aff": "~0.10.1",
+    "node-uuid": "~1.4.3"
   },
   "resolutions": {
     "purescript-arrays": "~0.3.2",

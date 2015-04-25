@@ -1,6 +1,6 @@
 node_modules
 bower_components
-js
-*.tix
-/tmp
+/dist
 npm-debug.log
+.psci_modules
+public/js/*.js
