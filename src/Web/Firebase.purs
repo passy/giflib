@@ -7,6 +7,7 @@ module Web.Firebase
 where
 
 import Data.Maybe (Maybe())
+import Data.Nullable (toNullable, Nullable())
 import Control.Monad.Eff (Eff())
 import Web.Firebase.Types (Firebase(), FirebaseEff(), FirebaseErr(), DataSnapshot())
 import Halogen.HTML.Target (URL(), runURL)
@@ -56,7 +57,7 @@ foreign import onImpl """
       return fb.on(eventType, callback, cancelCallback);
     }
   }
-""" :: forall eff. Fn4 String (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit) (Maybe (FirebaseErr -> Eff eff Unit)) Firebase (Eff (firebase :: FirebaseEff | eff) Unit)
+""" :: forall eff. Fn4 String (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit) (Nullable (FirebaseErr -> Eff eff Unit)) Firebase (Eff (firebase :: FirebaseEff | eff) Unit)
 
 on :: forall eff.
       EventType ->
@@ -64,5 +65,4 @@ on :: forall eff.
       Maybe (FirebaseErr -> Eff eff Unit) ->
       Firebase ->
       Eff (firebase :: FirebaseEff | eff) Unit
--- TODO: Need to unwrap the Maybe, or convert into Foreign.Undefined/Null
-on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) cb fb
+on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (toNullable cb) fb
