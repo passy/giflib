@@ -11,6 +11,7 @@ import Control.Monad.Eff (Eff())
 import Web.Firebase.Types (Firebase(), FirebaseEff(), FirebaseErr(), DataSnapshot())
 import Halogen.HTML.Target (URL(), runURL)
 import Data.Function (Fn1(), Fn2(), Fn4(), runFn1, runFn2, runFn4)
+import Web.Giflib.Internal.Unsafe (unsafeEvalEff)
 
 
 foreign import newFirebaseImpl """
@@ -64,4 +65,4 @@ on :: forall eff.
       Firebase ->
       Eff (firebase :: FirebaseEff | eff) Unit
 -- TODO: Need to unwrap the Maybe, or convert into Foreign.Undefined/Null
-on etype ds cb fb = runFn4 onImpl (showEventType etype) ds cb fb
+on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) cb fb

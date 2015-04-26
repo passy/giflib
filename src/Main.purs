@@ -189,4 +189,4 @@ main = do
 
  where
    dscb :: forall eff. FB.DataSnapshot -> Eff (console :: Console | eff) Unit
-   dscb ds = unsafeEvalEff <<< log $ DS.val ds
+   dscb ds = log $ DS.val ds
