@@ -1,12 +1,14 @@
 module Web.Giflib.Internal.Unsafe
   ( unsafePerformEff
   , unsafePrintId
+  , unsafeShow
+  , unsafeEvalEff
   , undefined
   ) where
 
+import Control.Monad.Eff (Eff())
 import Data.Foreign (Foreign(), toForeign)
 import Debug.Trace (trace)
-import Control.Monad.Eff (Eff())
 
 
 foreign import unsafePerformEff
@@ -25,7 +27,20 @@ foreign import showForeign
 
 foreign import undefined :: forall a. a
 
+unsafeShow :: forall a. a -> String
+unsafeShow = showForeign <<< toForeign
+
 unsafePrintId :: forall a. a -> a
 unsafePrintId o = unsafePerformEff $ do
   trace <<< showForeign <<< toForeign $ o
   return o
+
+-- | Run an effectful computation maintaining the type signature.
+--   This can be helpful when passing callbacks to FFI functions,
+--   but comes with obvious big scary risks.
+foreign import unsafeEvalEff """
+  function unsafeEvalEff(f) {
+    f();
+    return f;
+  }
+""":: forall eff a. Eff eff a -> Eff eff a

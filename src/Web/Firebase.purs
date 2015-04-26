@@ -1,7 +1,6 @@
 module Web.Firebase
 ( newFirebase
 , child
-, printVals
 , on
 , EventType(..)
 )
@@ -36,14 +35,6 @@ foreign import childImpl """
 child :: forall eff. String -> Firebase -> Eff (firebase :: FirebaseEff | eff) Firebase
 child = runFn2 childImpl
 
-foreign import printVals """
-  function printVals(fb) {
-    return function () {
-      fb.on('value', function (x) { console.log('fbval', x.val()); });
-    }
-  }
-""" :: forall eff. Firebase -> Eff (firebase :: FirebaseEff | eff) Unit
-
 data EventType = Value
                | ChildAdded
                | ChildChanged
@@ -64,11 +55,11 @@ foreign import onImpl """
       return fb.on(eventType, callback, cancelCallback);
     }
   }
-""" :: forall eff. Fn4 String (DataSnapshot -> Eff (firebase :: FirebaseEff | eff ) Unit) (Maybe (FirebaseErr -> Eff eff Unit)) Firebase (Eff (firebase :: FirebaseEff | eff) Unit)
+""" :: forall eff. Fn4 String (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit) (Maybe (FirebaseErr -> Eff eff Unit)) Firebase (Eff (firebase :: FirebaseEff | eff) Unit)
 
 on :: forall eff.
       EventType ->
-      (DataSnapshot -> Eff (firebase :: FirebaseEff | eff ) Unit) ->
+      (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit) ->
       Maybe (FirebaseErr -> Eff eff Unit) ->
       Firebase ->
       Eff (firebase :: FirebaseEff | eff) Unit

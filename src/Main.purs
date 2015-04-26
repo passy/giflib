@@ -33,9 +33,11 @@ import qualified Data.StrMap as StrMap
 import qualified Node.UUID as UUID
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.Types as FB
+import qualified Web.Firebase.DataSnapshot as DS
 
 import Web.Giflib.Types (Tag(), Entry(..))
-import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
+import Web.Giflib.Internal.Unsafe (unsafePrintId, unsafeShow, undefined, unsafeEvalEff)
+import Web.Giflib.Internal.Debug (Console(), log)
 import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
@@ -186,5 +188,5 @@ main = do
   trace "Up and running."
 
  where
-   dscb :: forall eff. FB.DataSnapshot -> Eff (firebase :: FB.FirebaseEff | eff) Unit
-   dscb ds = return unit
+   dscb :: forall eff. FB.DataSnapshot -> Eff (console :: Console | eff) Unit
+   dscb ds = unsafeEvalEff <<< log $ DS.val ds
