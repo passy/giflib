@@ -32,6 +32,7 @@ import qualified MDL.Button as MDL
 import qualified Data.StrMap as StrMap
 import qualified Node.UUID as UUID
 import qualified Web.Firebase as FB
+import qualified Web.Firebase.Types as FB
 
 import Web.Giflib.Types (Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
@@ -175,7 +176,7 @@ main = do
 
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- FB.child "entries" fb
-  FB.printVals children
+  FB.on FB.Value dscb Nothing children
 
   doc <- document globalWindow
   el <- querySelector "#app-main" doc
@@ -183,3 +184,7 @@ main = do
     Just e -> appendChild e node
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
   trace "Up and running."
+
+ where
+   dscb :: forall eff. FB.DataSnapshot -> Eff (firebase :: FB.FirebaseEff | eff) Unit
+   dscb ds = return unit
