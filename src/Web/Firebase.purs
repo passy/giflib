@@ -7,18 +7,20 @@ where
 
 import Control.Monad.Eff (Eff())
 import Web.Firebase.Types (Firebase(), FirebaseEff())
-import Halogen.HTML.Target (URL())
+import Halogen.HTML.Target (URL(), runURL)
 import Data.Function (Fn1(), runFn1)
 
 
 foreign import newFirebaseImpl """
-  function newFirebase(uri) {
-    return new Firebase(uri);
+  function newFirebaseImpl(uri) {
+    return function () {
+      return new Firebase(uri);
+    }
   }
-""" :: forall eff. Fn1 URL (Eff (firebase :: FirebaseEff | eff) Firebase)
+""" :: forall eff. Fn1 String (Eff (firebase :: FirebaseEff | eff) Firebase)
 
 newFirebase :: forall eff. URL -> Eff (firebase :: FirebaseEff | eff) Firebase
-newFirebase = runFn1 newFirebaseImpl
+newFirebase u = runFn1 newFirebaseImpl $ runURL u
 
 foreign import child """
   function child(childPath) {
