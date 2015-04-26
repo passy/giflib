@@ -14,6 +14,7 @@ import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
+import Halogen.HTML.Target (URL())
 
 import Halogen (runUI, HalogenEffects())
 import Halogen.Component (component, Component(..))
@@ -32,20 +33,20 @@ import qualified Data.StrMap as StrMap
 import qualified Node.UUID as UUID
 import qualified Web.Firebase as FB
 
-import Web.Giflib.Types (URI(), Tag(), Entry(..))
+import Web.Giflib.Types (Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined)
 import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
-             , newUri  :: String    -- ^ New URI to be submitted
+             , newUri  :: URL       -- ^ New URL to be submitted
              , newTags :: [Tag]     -- ^ New Tags to be submitted
              }
 
 data Action
   = NoOp
   | NewEntry Entry
-  | UpdateNewURI String
+  | UpdateNewURL String
   | UpdateNewTags String
 
 data Request
@@ -84,7 +85,7 @@ update s' a = updateState a s'
   where
   updateState NoOp s = s
   updateState (NewEntry e) s = s { entries = (unsafePrintId e) : s.entries }
-  updateState (UpdateNewURI e) s = s { newUri = unsafePrintId e }
+  updateState (UpdateNewURL e) s = s { newUri = unsafePrintId e }
   updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
 
 -- | Handle a request to an external service
@@ -110,9 +111,9 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 MDL.textfield [ E.onInput $ A.input UpdateNewURI ] $
+                 MDL.textfield [ E.onInput $ A.input UpdateNewURL ] $
                   MDL.defaultTextfield { id = Just "inp-new-gif"
-                                       , label = Just "URI"
+                                       , label = Just "URL"
                                        , type_ = "url"
                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [

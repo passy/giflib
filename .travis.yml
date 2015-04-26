@@ -2,6 +2,7 @@ language: node_js
 sudo: false
 before_script:
   - npm install bower
+  - npm install -g purescript
   - node_modules/.bin/bower install
 node_js:
 - '0.12'

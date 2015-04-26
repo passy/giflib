@@ -1,6 +1,7 @@
 node_modules
 bower_components
 /dist
+/output
 npm-debug.log
 .psci_modules
 public/js/*.js

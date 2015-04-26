@@ -2,7 +2,7 @@ module Web.Firebase where
 
 import Control.Monad.Eff (Eff())
 import Web.Firebase.Types (Firebase(), FirebaseEff())
-import Web.Giflib.Types (URI()) -- TODO: Don't cross-depend here
+import Halogen.HTML.Target (URL())
 
 
 foreign import newFirebase """
@@ -11,7 +11,7 @@ foreign import newFirebase """
       return new Firebase(uri);
     };
   }
-""" :: forall eff. URI -> Eff (firebase :: FirebaseEff | eff) Firebase
+""" :: forall eff. URL -> Eff (firebase :: FirebaseEff | eff) Firebase
 
 foreign import child """
   function child(childPath) {
