@@ -12,17 +12,23 @@ gulp.task('compile', function () {
     fs.writeFileSync('dist/js/app.js', out);
 });
 
-gulp.task('copy', function () {
+gulp.task('copy-bower', function () {
     return gulp.src([
-        'bower_components',
-        'public'
+        'bower_components/**',
     ], { base: '.' })
         .pipe(gulp.dest('dist/'));
+});
+
+gulp.task('copy-static', function () {
+    return gulp.src([
+        'public/*',
+        'public/**',
+    ]).pipe(gulp.dest('dist/'));
 });
 
 gulp.task('clean', function () {
     return del.bind(null, ['dist']);
 });
 
-gulp.task('build', ['clean', 'copy', 'compile']);
+gulp.task('build', ['clean', 'copy-bower', 'copy-static', 'compile']);
 gulp.task('default', ['build']);

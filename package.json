@@ -6,7 +6,7 @@
   "scripts": {
     "test": "gulp build",
     "build": "gulp build",
-    "serve": "http-server",
+    "serve": "http-server dist/",
     "watch": "gulp watch"
   },
   "repository": {
