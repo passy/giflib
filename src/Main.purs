@@ -14,7 +14,7 @@ import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
-import Halogen.HTML.Target (URL())
+import Halogen.HTML.Target (URL(), url, runURL)
 
 import Halogen (runUI, HalogenEffects())
 import Halogen.Component (component, Component(..))
@@ -39,14 +39,14 @@ import Debug.Trace
 
 type State = { entries :: [Entry]   -- ^ All entries matching the tag
              , tag     :: Maybe Tag -- ^ Currently selected tag, if any
-             , newUri  :: URL       -- ^ New URL to be submitted
+             , newUrl  :: URL       -- ^ New URL to be submitted
              , newTags :: [Tag]     -- ^ New Tags to be submitted
              }
 
 data Action
   = NoOp
   | NewEntry Entry
-  | UpdateNewURL String
+  | UpdateNewURL URL
   | UpdateNewTags String
 
 data Request
@@ -57,18 +57,18 @@ type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff, now :: Date.Now | eff)
 emptyState :: State
 emptyState = { entries: mempty
              , tag: mempty
-             , newUri: mempty
+             , newUrl: url ""
              , newTags: mempty
              }
 
 demoEntries :: [Entry]
 demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
-                , uri: "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+                , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                 , tags: [ "hamster", "party", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.January 1
                 }
               , { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
-                , uri: "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
+                , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
                 , tags: [ "cat", "wiggle", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.February 28
                 }
@@ -85,7 +85,7 @@ update s' a = updateState a s'
   where
   updateState NoOp s = s
   updateState (NewEntry e) s = s { entries = (unsafePrintId e) : s.entries }
-  updateState (UpdateNewURL e) s = s { newUri = unsafePrintId e }
+  updateState (UpdateNewURL e) s = s { newUrl = unsafePrintId e }
   updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
 
 -- | Handle a request to an external service
@@ -97,7 +97,7 @@ handler (AddNewEntry s) = do
   now <- liftEff Date.now
   E.yield $ NewEntry { id: uuid
                      , tags: s.newTags
-                     , uri: s.newUri
+                     , url: s.newUrl
                      , date: now
                      }
 
@@ -111,7 +111,7 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 MDL.textfield [ E.onInput $ A.input UpdateNewURL ] $
+                 MDL.textfield [ E.onInput $ \u -> A.input UpdateNewURL $ url u ] $
                   MDL.defaultTextfield { id = Just "inp-new-gif"
                                        , label = Just "URL"
                                        , type_ = "url"
@@ -143,7 +143,7 @@ ui = component $ render <$> stateful demoState update
         [ A.classes [MDL.card, MDL.shadow 3]
         ]
         [ H.div [ A.class_ MDL.cardImageContainer
-                , A.style $ backgroundImage e.uri
+                , A.style $ backgroundImage $ runURL e.url
                 ] []
         , H.div [ A.class_ MDL.cardHeading ]
             [ H.h2
@@ -152,9 +152,9 @@ ui = component $ render <$> stateful demoState update
         , H.div [ A.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ]
         , H.div [ A.class_ MDL.cardBottom ]
             [ H.a
-                [ A.href e.uri
+                [ A.href $ runURL e.url
                 , A.class_ MDL.cardUri
-                , A.target "_blank" ] [ H.text e.uri ]
+                , A.target "_blank" ] [ H.text $ runURL e.url ]
             ]
         ]
 
@@ -173,7 +173,7 @@ main = do
   trace "Booting. Beep. Boop."
   Tuple node driver <- runUI ui
 
-  fb <- FB.newFirebase "https://giflib-web.firebaseio.com/"
+  fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- FB.child "entries" fb
   FB.printVals children
 

@@ -7,7 +7,7 @@ import qualified Node.UUID as UUID
 type Tag = String
 
 type Entry = { id :: UUID.UUID
-             , uri :: URL
+             , url :: URL
              , tags :: [Tag]
              , date :: Date
              }
