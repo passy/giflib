@@ -111,7 +111,7 @@ ui = component $ render <$> stateful demoState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 MDL.textfield [ E.onInput $ \u -> A.input UpdateNewURL $ url u ] $
+                 MDL.textfield [ E.onInput (A.input UpdateNewURL <<< url) ] $
                   MDL.defaultTextfield { id = Just "inp-new-gif"
                                        , label = Just "URL"
                                        , type_ = "url"
