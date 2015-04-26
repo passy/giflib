@@ -1,5 +1,6 @@
 machine:
   node:
     version: iojs
+test:
   pre:
-    bower install
+    - bower install
