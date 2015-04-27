@@ -16,7 +16,7 @@ import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 import Halogen.HTML.Target (URL(), url, runURL)
 
-import Halogen (runUI, HalogenEffects())
+import Halogen (runUI, Driver(), HalogenEffects())
 import Halogen.Component (component, Component(..))
 import Halogen.Signal (SF1(..), stateful)
 import qualified Halogen.HTML as H
@@ -51,6 +51,7 @@ data Action
   | NewEntry Entry
   | UpdateNewURL URL
   | UpdateNewTags String
+  | UpdateEntries [Entry]
 
 data Request
   = AddNewEntry State
@@ -64,6 +65,9 @@ emptyState = { entries: mempty
              , newTags: mempty
              }
 
+decodeUuid :: String -> UUID.UUID
+decodeUuid = UUID.parse >>> UUID.unparse
+
 demoEntries :: [Entry]
 demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
                 , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
@@ -76,9 +80,13 @@ demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
                 , date: fromJust $ Date.date 2015 Date.February 28
                 }
               ]
-  where
-    decodeUuid :: String -> UUID.UUID
-    decodeUuid = UUID.parse >>> UUID.unparse
+
+additionalDemoEntry :: Entry
+additionalDemoEntry = { id: decodeUuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
+                      , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
+                      , tags: [ "taylor", "woot" ]
+                      , date: fromJust $ Date.date 2015 Date.April 27
+                      }
 
 demoState :: State
 demoState = emptyState { entries = demoEntries, tag = Just "animals" }
@@ -90,6 +98,7 @@ update s' a = updateState a s'
   updateState (NewEntry e) s = s { entries = (unsafePrintId e) : s.entries }
   updateState (UpdateNewURL e) s = s { newUrl = unsafePrintId e }
   updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
+  updateState (UpdateEntries e) s = s { entries = e }
 
 -- | Handle a request to an external service
 handler :: forall eff.
@@ -180,7 +189,7 @@ main = do
 
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- FB.child "entries" fb
-  FB.on FB.Value dscb Nothing children
+  FB.on FB.Value (dscb driver) Nothing children
 
   doc <- document globalWindow
   el <- querySelector "#app-main" doc
@@ -190,5 +199,6 @@ main = do
   trace "Up and running."
 
  where
-   dscb :: forall eff. FB.DataSnapshot -> Eff (console :: Console | eff) Unit
-   dscb ds = log $ DS.val ds
+   -- TODO: Use Aff instead of Eff for this.
+   dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
+   dscb driver ds = driver $ UpdateEntries (additionalDemoEntry : demoEntries)
