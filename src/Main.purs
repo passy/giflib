@@ -34,16 +34,17 @@ import qualified Node.UUID as UUID
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.Types as FB
 import qualified Web.Firebase.DataSnapshot as DS
+import qualified Data.Set as Set
 
 import Web.Giflib.Types (Tag(), Entry(..))
 import Web.Giflib.Internal.Unsafe (unsafePrintId, unsafeShow, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
 import Debug.Trace
 
-type State = { entries :: [Entry]   -- ^ All entries matching the tag
-             , tag     :: Maybe Tag -- ^ Currently selected tag, if any
-             , newUrl  :: URL       -- ^ New URL to be submitted
-             , newTags :: [Tag]     -- ^ New Tags to be submitted
+type State = { entries :: [Entry]     -- ^ All entries matching the tag
+             , tag     :: Maybe Tag   -- ^ Currently selected tag, if any
+             , newUrl  :: URL         -- ^ New URL to be submitted
+             , newTags :: Set.Set Tag -- ^ New Tags to be submitted
              }
 
 data Action
@@ -61,8 +62,9 @@ type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff, now :: Date.Now | eff)
 emptyState :: State
 emptyState = { entries: mempty
              , tag: mempty
+             -- TODO: Add a Monoid instance to URL
              , newUrl: url ""
-             , newTags: mempty
+             , newTags: Set.empty
              }
 
 decodeUuid :: String -> UUID.UUID
@@ -71,12 +73,12 @@ decodeUuid = UUID.parse >>> UUID.unparse
 demoEntries :: [Entry]
 demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
                 , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
-                , tags: [ "hamster", "party", "animals" ]
+                , tags: Set.fromList [ "hamster", "party", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.January 1
                 }
               , { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
                 , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
-                , tags: [ "cat", "wiggle", "animals" ]
+                , tags: Set.fromList [ "cat", "wiggle", "animals" ]
                 , date: fromJust $ Date.date 2015 Date.February 28
                 }
               ]
@@ -84,7 +86,7 @@ demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
 additionalDemoEntry :: Entry
 additionalDemoEntry = { id: decodeUuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
                       , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
-                      , tags: [ "taylor", "woot" ]
+                      , tags: Set.fromList [ "taylor", "woot" ]
                       , date: fromJust $ Date.date 2015 Date.April 27
                       }
 
@@ -175,11 +177,11 @@ ui = component $ render <$> stateful demoState update
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e = show e.date
 
-formatEntryTags :: forall e. { tags :: [Tag] | e } -> String
-formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) e.tags
+formatEntryTags :: forall e. { tags :: Set.Set Tag | e } -> String
+formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) $ Set.toList e.tags
 
-processTagInput :: String -> [Tag]
-processTagInput = trim >>> split " "
+processTagInput :: String -> Set.Set Tag
+processTagInput = trim >>> split " " >>> Set.fromList
 
 -- Application Main
 
