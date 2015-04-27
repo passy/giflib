@@ -110,17 +110,19 @@ ui = component $ render <$> stateful demoState update
   render :: State -> H.HTML p (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ]
-      [ H.form [ A.onsubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
+      [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 MDL.textfield [ E.onInput (A.input UpdateNewURL <<< url) ] $
+                 MDL.textfield [ E.onInput (A.input UpdateNewURL <<< url)
+                               , A.required true ] $
                   MDL.defaultTextfield { id = Just "inp-new-gif"
                                        , label = Just "URL"
                                        , type_ = "url"
                                        } ]
                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 MDL.textfield [ E.onInput $ A.input UpdateNewTags ] $
+                 MDL.textfield [ E.onInput $ A.input UpdateNewTags
+                               , A.required true ] $
                    MDL.defaultTextfield { id = Just "inp-new-tags"
                                         , label = Just "Tags"
                                         } ]

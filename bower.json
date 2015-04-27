@@ -31,13 +31,13 @@
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
-    "purescript-halogen": "ce1b0a0384cd1bca1045ccf17bc89f9d6f06301b",
+    "purescript-halogen": "passy/purescript-halogen#bfba5d6161957ae8f60931b6def9d9cdcae88735",
     "purescript-lens": "~0.7",
     "purescript-node-uuid": "~0.5.0",
-    "purescript-argonaut": "passy/purescript-argonaut#version-bump",
     "purescript-aff": "~0.10.1",
     "node-uuid": "~1.4.3",
-    "purescript-nullable": "~0.1.1"
+    "purescript-nullable": "~0.1.1",
+    "purescript-argonaut": "~0.5.0"
   },
   "resolutions": {
     "purescript-arrays": "~0.3.2",
@@ -45,7 +45,6 @@
     "purescript-bifunctors": "~0.3.0",
     "purescript-lens": "~0.7",
     "purescript-const": "~0.4.0",
-    "purescript-argonaut": "version-bump",
     "purescript-optic": "~0.5.0",
     "purescript-aff": "~0.10.1",
     "purescript-datetime": "~0.5.2",
@@ -58,6 +57,7 @@
     "purescript-foldable-traversable": "~0.4.0",
     "purescript-exceptions": "~0.3.0",
     "purescript-integers": "~0.2.0",
-    "purescript-contravariant": "~0.1.0"
+    "purescript-contravariant": "~0.1.0",
+    "purescript-argonaut": "~0.5.0"
   }
 }
