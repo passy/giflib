@@ -70,25 +70,26 @@ emptyState = { entries: mempty
 decodeUuid :: String -> UUID.UUID
 decodeUuid = UUID.parse >>> UUID.unparse
 
+-- TODO: Remove those, or move to tests, once loading works.
 demoEntries :: [Entry]
-demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
-                , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
-                , tags: Set.fromList [ "hamster", "party", "animals" ]
-                , date: fromJust $ Date.date 2015 Date.January 1
-                }
-              , { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
-                , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
-                , tags: Set.fromList [ "cat", "wiggle", "animals" ]
-                , date: fromJust $ Date.date 2015 Date.February 28
-                }
+demoEntries = [ Entry { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
+                      , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+                      , tags: Set.fromList [ "hamster", "party", "animals" ]
+                      , date: fromJust $ Date.date 2015 Date.January 1
+                      }
+              , Entry { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
+                      , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
+                      , tags: Set.fromList [ "cat", "wiggle", "animals" ]
+                      , date: fromJust $ Date.date 2015 Date.February 28
+                      }
               ]
 
 additionalDemoEntry :: Entry
-additionalDemoEntry = { id: decodeUuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
-                      , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
-                      , tags: Set.fromList [ "taylor", "woot" ]
-                      , date: fromJust $ Date.date 2015 Date.April 27
-                      }
+additionalDemoEntry = Entry { id: decodeUuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
+                            , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
+                            , tags: Set.fromList [ "taylor", "woot" ]
+                            , date: fromJust $ Date.date 2015 Date.April 27
+                            }
 
 demoState :: State
 demoState = emptyState { entries = demoEntries, tag = Just "animals" }
@@ -109,11 +110,11 @@ handler :: forall eff.
 handler (AddNewEntry s) = do
   uuid <- liftEff UUID.v4
   now <- liftEff Date.now
-  E.yield $ NewEntry { id: uuid
-                     , tags: s.newTags
-                     , url: s.newUrl
-                     , date: now
-                     }
+  E.yield $ NewEntry $ Entry { id: uuid
+                             , tags: s.newTags
+                             , url: s.newUrl
+                             , date: now
+                             }
 
 ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
 ui = component $ render <$> stateful demoState update
@@ -152,7 +153,7 @@ ui = component $ render <$> stateful demoState update
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
     entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
-    entryCard e = H.div
+    entryCard (Entry e) = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
         -- https://github.com/Matt-Esch/virtual-dom/blob/7cd99a160f8d7c9953e71e0b26a740dae40e55fc/docs/vnode.md#arguments
@@ -175,7 +176,7 @@ ui = component $ render <$> stateful demoState update
         ]
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
-formatEntryDatetime e = show e.date
+formatEntryDatetime e = show e.date -- TODO: Format slightly more readably
 
 formatEntryTags :: forall e. { tags :: Set.Set Tag | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) $ Set.toList e.tags
