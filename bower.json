@@ -31,7 +31,7 @@
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
-    "purescript-halogen": "passy/purescript-halogen#bfba5d6161957ae8f60931b6def9d9cdcae88735",
+    "purescript-halogen": "e4d0d105b1378bd622f0dca4c19cf065c8549222",
     "purescript-lens": "~0.7",
     "purescript-node-uuid": "~0.5.0",
     "purescript-aff": "~0.10.1",
