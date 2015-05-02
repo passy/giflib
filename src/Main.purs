@@ -30,13 +30,13 @@ import qualified MDL as MDL
 import qualified MDL.Textfield as MDL
 import qualified MDL.Button as MDL
 import qualified Data.StrMap as StrMap
-import qualified Node.UUID as UUID
+import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.Types as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Data.Set as Set
 
-import Web.Giflib.Types (Tag(), Entry(..))
+import Web.Giflib.Types (Tag(), Entry(..), uuid)
 import Web.Giflib.Internal.Unsafe (unsafePrintId, unsafeShow, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
 import Debug.Trace
@@ -57,7 +57,7 @@ data Action
 data Request
   = AddNewEntry State
 
-type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff, now :: Date.Now | eff)
+type AppEff eff = HalogenEffects (uuid :: NUUID.UUIDEff, now :: Date.Now | eff)
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -67,17 +67,14 @@ emptyState = { entries: mempty
              , newTags: Set.empty
              }
 
-decodeUuid :: String -> UUID.UUID
-decodeUuid = UUID.parse >>> UUID.unparse
-
 -- TODO: Remove those, or move to tests, once loading works.
 demoEntries :: [Entry]
-demoEntries = [ Entry { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
+demoEntries = [ Entry { id: uuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
                       , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                       , tags: Set.fromList [ "hamster", "party", "animals" ]
                       , date: fromJust $ Date.date 2015 Date.January 1
                       }
-              , Entry { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
+              , Entry { id: uuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
                       , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
                       , tags: Set.fromList [ "cat", "wiggle", "animals" ]
                       , date: fromJust $ Date.date 2015 Date.February 28
@@ -85,7 +82,7 @@ demoEntries = [ Entry { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
               ]
 
 additionalDemoEntry :: Entry
-additionalDemoEntry = Entry { id: decodeUuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
+additionalDemoEntry = Entry { id: uuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
                             , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
                             , tags: Set.fromList [ "taylor", "woot" ]
                             , date: fromJust $ Date.date 2015 Date.April 27
@@ -108,9 +105,9 @@ handler :: forall eff.
   Request ->
   E.Event (AppEff eff) Action
 handler (AddNewEntry s) = do
-  uuid <- liftEff UUID.v4
+  id' <- liftEff NUUID.v4
   now <- liftEff Date.now
-  E.yield $ NewEntry $ Entry { id: uuid
+  E.yield $ NewEntry $ Entry { id: uuid $ show id'
                              , tags: s.newTags
                              , url: s.newUrl
                              , date: now
@@ -176,7 +173,7 @@ ui = component $ render <$> stateful demoState update
         ]
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
-formatEntryDatetime e = show e.date -- TODO: Format slightly more readably
+formatEntryDatetime e = show e.date
 
 formatEntryTags :: forall e. { tags :: Set.Set Tag | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) $ Set.toList e.tags

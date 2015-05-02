@@ -31,14 +31,15 @@
     "purescript-arrays": "~0.2.1",
     "purescript-foreign": "~0.4.0",
     "purescript-exceptions": "~0.2.2",
-    "purescript-halogen": "e4d0d105b1378bd622f0dca4c19cf065c8549222",
+    "purescript-halogen": "passy/purescript-halogen#ee7141c57b2f1264de68489f73b073395c7c6ce4",
     "purescript-lens": "~0.7",
     "purescript-node-uuid": "~0.5.0",
     "purescript-aff": "~0.10.1",
     "node-uuid": "~1.4.3",
     "purescript-nullable": "~0.1.1",
     "purescript-argonaut": "~0.5.0",
-    "purescript-sets": "~0.3.2"
+    "purescript-sets": "~0.3.2",
+    "purescript-test-unit": "~1.1.6"
   },
   "resolutions": {
     "purescript-arrays": "~0.3.2",
@@ -49,16 +50,18 @@
     "purescript-optic": "~0.5.0",
     "purescript-aff": "~0.10.1",
     "purescript-datetime": "~0.5.2",
-    "purescript-tuples": "~0.4.0",
+    "purescript-tuples": "~0.3.0",
     "purescript-maybe": "~0.3.0",
     "purescript-control": "~0.3.0",
-    "purescript-monoid": "~0.3.0",
+    "purescript-monoid": "~0.2.0",
     "purescript-either": "~0.2.0",
     "purescript-foreign": "~0.5.0",
-    "purescript-foldable-traversable": "~0.4.0",
+    "purescript-foldable-traversable": "~0.3.0",
     "purescript-exceptions": "~0.3.0",
     "purescript-integers": "~0.2.0",
     "purescript-contravariant": "~0.1.0",
-    "purescript-argonaut": "~0.5.0"
+    "purescript-argonaut": "~0.5.0",
+    "purescript-identity": "~0.3.0",
+    "purescript-transformers": "~0.5.0"
   }
 }
