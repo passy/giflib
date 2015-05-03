@@ -1,14 +1,12 @@
 module Web.Giflib.Types where
 
 import Data.Array (snoc)
-import Data.Maybe
-import Data.Either
-import Data.Foldable
-import Data.Traversable
+import Data.Either (Either(Left))
 import Halogen.HTML.Target (URL(), url)
-import Data.Argonaut
+import Data.Argonaut (foldJsonObject)
+import Data.Argonaut.Combinators ((.?), (?>>=))
 import Data.Argonaut.Core (Json(..), JArray(..), JObject(..))
-import Data.Argonaut.Decode (DecodeJson)
+import Data.Argonaut.Decode (DecodeJson, decodeJson)
 import Web.Giflib.Internal.Unsafe (undefined)
 
 import qualified Data.StrMap as StrMap
