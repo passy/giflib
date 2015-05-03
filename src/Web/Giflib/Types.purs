@@ -57,7 +57,6 @@ decodeEntry json =
   where
     parse :: [Entry] -> String -> Json -> Either String [Entry]
     parse acc key json = do
-      -- TODO: Investigate if applicative would suffice here.
       obj <- decodeJson json
       url' <- (obj .? "uri") :: Either String String
       tstamp <- (obj .? "date") :: Either String Number
