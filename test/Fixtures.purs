@@ -8,8 +8,8 @@ import qualified Data.Date as Date
 import qualified Data.Time as Time
 import qualified Data.Set as Set
 
-entriesJson :: String
-entriesJson = """{
+validEntriesJson :: String
+validEntriesJson = """{
   "-JnknoQihfbdX5VZA9Z_": {
     "date": 1429969259654,
     "tags": [
@@ -39,7 +39,23 @@ entriesJson = """{
 }
 """
 
-entriesRecord = Entry <$>
+invalidEntriesJson :: String
+invalidEntriesJson = """{
+  "-JnknoQixfbdX5VZA9Z_": {
+    "date": "not a date",
+    "tags": [
+      "hamster",
+      "party",
+      "animal",
+      "test"
+    ],
+    "uri": "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+  }
+}
+"""
+
+validEntriesRecord :: [Entry]
+validEntriesRecord = Entry <$>
                 [ { id: uuid "-JnknoQihfbdX5VZA9Z_"
                   , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                   , tags: Set.fromList [ "animal", "hamster", "party", "test" ]
