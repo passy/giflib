@@ -49,10 +49,10 @@ uuid :: String -> UUID
 uuid = UUID
 
 instance decodeJsonEntry :: DecodeJson [Entry] where
-  decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntry
+  decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntries
 
-decodeEntry :: StrMap.StrMap Json -> Either String [Entry]
-decodeEntry json =
+decodeEntries :: StrMap.StrMap Json -> Either String [Entry]
+decodeEntries json =
   StrMap.foldM parse [] json
   where
     parse :: [Entry] -> String -> Json -> Either String [Entry]
