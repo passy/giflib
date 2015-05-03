@@ -26,6 +26,7 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Forms as E
 import qualified Halogen.HTML.Events.Monad as E
 import qualified Data.Date as Date
+import qualified Data.Date.Locale as Date
 import qualified MDL as MDL
 import qualified MDL.Textfield as MDL
 import qualified MDL.Button as MDL
@@ -35,9 +36,10 @@ import qualified Web.Firebase as FB
 import qualified Web.Firebase.Types as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Data.Set as Set
+import qualified Data.Int as Int
 
 import Web.Giflib.Types (Tag(), Entry(..), uuid)
-import Web.Giflib.Internal.Unsafe (unsafePrintId, unsafeShow, undefined, unsafeEvalEff)
+import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
 import Debug.Trace
 
@@ -72,12 +74,12 @@ demoEntries :: [Entry]
 demoEntries = [ Entry { id: uuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
                       , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                       , tags: Set.fromList [ "hamster", "party", "animals" ]
-                      , date: fromJust $ Date.date 2015 Date.January 1
+                      , date: fromJust $ Date.fromString "2015-04-01 13:37:00"
                       }
               , Entry { id: uuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
                       , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
                       , tags: Set.fromList [ "cat", "wiggle", "animals" ]
-                      , date: fromJust $ Date.date 2015 Date.February 28
+                      , date: fromJust $ Date.fromString "2015-01-01 00:01:02"
                       }
               ]
 
@@ -85,7 +87,7 @@ additionalDemoEntry :: Entry
 additionalDemoEntry = Entry { id: uuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
                             , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
                             , tags: Set.fromList [ "taylor", "woot" ]
-                            , date: fromJust $ Date.date 2015 Date.April 27
+                            , date: fromJust $ Date.fromString "2015-02-03 00:02:03"
                             }
 
 demoState :: State

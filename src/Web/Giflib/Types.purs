@@ -14,6 +14,7 @@ import Web.Giflib.Internal.Unsafe (undefined)
 import qualified Data.StrMap as StrMap
 import qualified Data.Set as Set
 import qualified Data.Date as Date
+import qualified Data.Time as Time
 
 type Tag = String
 
@@ -30,11 +31,21 @@ instance eqEntry :: Eq Entry where
                              a.date == b.date
   (/=) a         b         = not (a == b)
 
+instance showEntry :: Show Entry where
+  show (Entry a) = "Entry { id: " ++ show a.id
+                      ++ ", url: " ++ show a.url
+                      ++ ", tags: " ++ show a.tags
+                      ++ ", date: " ++ show a.date
+                      ++ "}"
+
 newtype UUID = UUID String
 
 instance eqUUID :: Eq UUID where
   (==) (UUID a) (UUID b) = a == b
   (/=) a        b        = not (a == b)
+
+instance showUUID :: Show UUID where
+  show (UUID a) = "uuid " ++ show a
 
 uuid :: String -> UUID
 uuid = UUID
@@ -44,20 +55,23 @@ instance decodeJsonEntry :: DecodeJson [Entry] where
 
 decodeEntry :: StrMap.StrMap Json -> Either String [Entry]
 decodeEntry json =
-  StrMap.foldM go [] json
+  StrMap.foldM parse [] json
   where
     -- TODO: Is this defined somewhere?
     snoc = flip (:)
 
-    go :: [Entry] -> String -> Json -> Either String [Entry]
-    go acc key json = do
+    parse :: [Entry] -> String -> Json -> Either String [Entry]
+    parse acc key json = do
       -- TODO: Investigate if applicative would suffice here.
-      obj <- (decodeJson json :: Either String (StrMap.StrMap Json))
-      url' <- obj .? "uri"
-      tstamp <- obj .? "date"
+      obj <- decodeJson json
+      url' <- (obj .? "uri") :: Either String String
+      tstamp <- (obj .? "date") :: Either String Number
+      tags <- (obj .? "tags") :: Either String [Tag]
+
+      let milliseconds = Time.Milliseconds (tstamp / 1000)
 
       return $ snoc acc $ Entry { id: uuid key
-                                , url: url "text" -- url url'
-                                , tags: Set.fromList [ "hamster", "party", "animals" ]
-                                , date: fromJust $ Date.date 2015 Date.January 1
+                                , url: url url'
+                                , tags: Set.fromList tags
+                                , date: fromJust $ Date.fromEpochMilliseconds milliseconds
                                 }

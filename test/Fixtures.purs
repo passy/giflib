@@ -42,9 +42,9 @@ entriesRecord = Entry <$>
     [ { id: uuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
       , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
       , tags: Set.fromList [ "hamster", "party", "animals" ]
-      , date: fromJust $ Date.date 2015 Date.January 1 }
+      , date: fromJust $ Date.fromString "2015-01-01 00:00:00" }
     , { id: uuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
       , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
       , tags: Set.fromList [ "cat", "wiggle", "animals" ]
-      , date: fromJust $ Date.date 2015 Date.February 28 }
+      , date: fromJust $ Date.fromString "2015-02-01 00:00:00" }
     ]
