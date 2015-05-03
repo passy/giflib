@@ -1,7 +1,7 @@
 module Web.Giflib.Internal.Unsafe
   ( unsafePerformEff
+  , unsafeShowPrintId
   , unsafePrintId
-  , unsafeShow
   , unsafeEvalEff
   , undefined
   ) where
@@ -27,12 +27,14 @@ foreign import showForeign
 
 foreign import undefined :: forall a. a
 
-unsafeShow :: forall a. a -> String
-unsafeShow = showForeign <<< toForeign
-
 unsafePrintId :: forall a. a -> a
 unsafePrintId o = unsafePerformEff $ do
   trace <<< showForeign <<< toForeign $ o
+  return o
+
+unsafeShowPrintId :: forall a. (Show a) => a -> a
+unsafeShowPrintId o = unsafePerformEff $ do
+  trace <<< show $ o
   return o
 
 -- | Run an effectful computation maintaining the type signature.

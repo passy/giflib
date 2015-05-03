@@ -26,18 +26,20 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Forms as E
 import qualified Halogen.HTML.Events.Monad as E
 import qualified Data.Date as Date
+import qualified Data.Date.Locale as Date
 import qualified MDL as MDL
 import qualified MDL.Textfield as MDL
 import qualified MDL.Button as MDL
 import qualified Data.StrMap as StrMap
-import qualified Node.UUID as UUID
+import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.Types as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Data.Set as Set
+import qualified Data.Int as Int
 
-import Web.Giflib.Types (Tag(), Entry(..))
-import Web.Giflib.Internal.Unsafe (unsafePrintId, unsafeShow, undefined, unsafeEvalEff)
+import Web.Giflib.Types (Tag(), Entry(..), uuid)
+import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
 import Debug.Trace
 
@@ -57,7 +59,7 @@ data Action
 data Request
   = AddNewEntry State
 
-type AppEff eff = HalogenEffects (uuid :: UUID.UUIDEff, now :: Date.Now | eff)
+type AppEff eff = HalogenEffects (uuid :: NUUID.UUIDEff, now :: Date.Now | eff)
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -67,28 +69,26 @@ emptyState = { entries: mempty
              , newTags: Set.empty
              }
 
-decodeUuid :: String -> UUID.UUID
-decodeUuid = UUID.parse >>> UUID.unparse
-
+-- TODO: Remove those, or move to tests, once loading works.
 demoEntries :: [Entry]
-demoEntries = [ { id: decodeUuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
-                , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
-                , tags: Set.fromList [ "hamster", "party", "animals" ]
-                , date: fromJust $ Date.date 2015 Date.January 1
-                }
-              , { id: decodeUuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
-                , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
-                , tags: Set.fromList [ "cat", "wiggle", "animals" ]
-                , date: fromJust $ Date.date 2015 Date.February 28
-                }
+demoEntries = [ Entry { id: uuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
+                      , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+                      , tags: Set.fromList [ "hamster", "party", "animals" ]
+                      , date: fromJust $ Date.fromString "2015-04-01 13:37:00"
+                      }
+              , Entry { id: uuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
+                      , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
+                      , tags: Set.fromList [ "cat", "wiggle", "animals" ]
+                      , date: fromJust $ Date.fromString "2015-01-01 00:01:02"
+                      }
               ]
 
 additionalDemoEntry :: Entry
-additionalDemoEntry = { id: decodeUuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
-                      , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
-                      , tags: Set.fromList [ "taylor", "woot" ]
-                      , date: fromJust $ Date.date 2015 Date.April 27
-                      }
+additionalDemoEntry = Entry { id: uuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
+                            , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
+                            , tags: Set.fromList [ "taylor", "woot" ]
+                            , date: fromJust $ Date.fromString "2015-02-03 00:02:03"
+                            }
 
 demoState :: State
 demoState = emptyState { entries = demoEntries, tag = Just "animals" }
@@ -107,13 +107,13 @@ handler :: forall eff.
   Request ->
   E.Event (AppEff eff) Action
 handler (AddNewEntry s) = do
-  uuid <- liftEff UUID.v4
+  id' <- liftEff NUUID.v4
   now <- liftEff Date.now
-  E.yield $ NewEntry { id: uuid
-                     , tags: s.newTags
-                     , url: s.newUrl
-                     , date: now
-                     }
+  E.yield $ NewEntry $ Entry { id: uuid $ show id'
+                             , tags: s.newTags
+                             , url: s.newUrl
+                             , date: now
+                             }
 
 ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
 ui = component $ render <$> stateful demoState update
@@ -152,7 +152,7 @@ ui = component $ render <$> stateful demoState update
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
     entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
-    entryCard e = H.div
+    entryCard (Entry e) = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
         -- https://github.com/Matt-Esch/virtual-dom/blob/7cd99a160f8d7c9953e71e0b26a740dae40e55fc/docs/vnode.md#arguments
