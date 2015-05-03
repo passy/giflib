@@ -68,10 +68,9 @@ decodeEntry json =
       tstamp <- (obj .? "date") :: Either String Number
       tags <- (obj .? "tags") :: Either String [Tag]
 
-      let milliseconds = Time.Milliseconds (tstamp / 1000)
-
+      -- TODO: Lift Unsafe.FromJust into Either
       return $ snoc acc $ Entry { id: uuid key
                                 , url: url url'
                                 , tags: Set.fromList tags
-                                , date: fromJust $ Date.fromEpochMilliseconds milliseconds
+                                , date: fromJust <<< Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp
                                 }
