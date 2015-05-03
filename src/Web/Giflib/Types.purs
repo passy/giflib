@@ -1,5 +1,6 @@
 module Web.Giflib.Types where
 
+import Data.Array (snoc)
 import Data.Maybe
 import Data.Either
 import Data.Foldable
@@ -56,9 +57,6 @@ decodeEntry :: StrMap.StrMap Json -> Either String [Entry]
 decodeEntry json =
   StrMap.foldM parse [] json
   where
-    -- TODO: Is this defined somewhere?
-    snoc = flip (:)
-
     parse :: [Entry] -> String -> Json -> Either String [Entry]
     parse acc key json = do
       -- TODO: Investigate if applicative would suffice here.
