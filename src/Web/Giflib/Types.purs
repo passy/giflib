@@ -1,7 +1,6 @@
 module Web.Giflib.Types where
 
 import Data.Maybe
-import Data.Maybe.Unsafe (fromJust)
 import Data.Either
 import Data.Foldable
 import Data.Traversable
@@ -67,10 +66,10 @@ decodeEntry json =
       url' <- (obj .? "uri") :: Either String String
       tstamp <- (obj .? "date") :: Either String Number
       tags <- (obj .? "tags") :: Either String [Tag]
+      date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 
-      -- TODO: Lift Unsafe.FromJust into Either
       return $ snoc acc $ Entry { id: uuid key
                                 , url: url url'
                                 , tags: Set.fromList tags
-                                , date: fromJust <<< Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp
+                                , date: date
                                 }
