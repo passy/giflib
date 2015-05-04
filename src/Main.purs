@@ -5,43 +5,47 @@ import Control.Functor (($>))
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
+import Data.Argonaut (decodeJson)
+import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Array (map, concat, (!!))
 import Data.DOM.Simple.Document ()
 import Data.DOM.Simple.Element (querySelector, appendChild)
 import Data.DOM.Simple.Window (document, globalWindow)
+import Data.Either (Either(Left, Right))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
-import Halogen.HTML.Target (URL(), url, runURL)
-
+import Debug.Trace (Trace(), trace)
 import Halogen (runUI, Driver(), HalogenEffects())
 import Halogen.Component (component, Component(..))
+import Halogen.HTML.Target (URL(), url, runURL)
 import Halogen.Signal (SF1(..), stateful)
+
+import qualified Data.Date as Date
+import qualified Data.Date.Locale as Date
+import qualified Data.Int as Int
+import qualified Data.Set as Set
+import qualified Data.StrMap as StrMap
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
-import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Forms as E
+import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Monad as E
-import qualified Data.Date as Date
-import qualified Data.Date.Locale as Date
 import qualified MDL as MDL
-import qualified MDL.Textfield as MDL
 import qualified MDL.Button as MDL
-import qualified Data.StrMap as StrMap
+import qualified MDL.Textfield as MDL
 import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
-import qualified Web.Firebase.Types as FB
 import qualified Web.Firebase.DataSnapshot as DS
-import qualified Data.Set as Set
-import qualified Data.Int as Int
+import qualified Web.Firebase.Types as FB
+import qualified Data.Foreign as Foreign
 
 import Web.Giflib.Types (Tag(), Entry(..), uuid)
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
-import Debug.Trace
 
 type State = { entries :: [Entry]     -- ^ All entries matching the tag
              , tag     :: Maybe Tag   -- ^ Currently selected tag, if any
@@ -59,7 +63,7 @@ data Action
 data Request
   = AddNewEntry State
 
-type AppEff eff = HalogenEffects (uuid :: NUUID.UUIDEff, now :: Date.Now | eff)
+type AppEff eff = HalogenEffects ( uuid :: NUUID.UUIDEff , now :: Date.Now | eff )
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -200,7 +204,16 @@ main = do
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
   trace "Up and running."
 
- where
-   -- TODO: Use Aff instead of Eff for this.
-   dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
-   dscb driver ds = driver $ UpdateEntries (additionalDemoEntry : demoEntries)
+  where
+    -- TODO: Use Aff instead of Eff for this.
+    dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
+    dscb driver ds = do
+      let f = Foreign.unsafeReadTagged "Object" $ DS.val ds
+      case f of
+           -- Left _ -> trace "Foreign error"
+           Right str -> case (decodeEntries str) of
+              -- Left err      -> trace "Something went wrong parsing the entries. " ++ err
+              Right entries -> driver $ UpdateEntries entries
+
+    decodeEntries :: JObject -> Either String [Entry]
+    decodeEntries = fromObject >>> decodeJson
