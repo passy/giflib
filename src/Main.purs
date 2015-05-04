@@ -8,6 +8,7 @@ import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 import Data.Argonaut (decodeJson)
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Array (map, concat, (!!))
+import Data.Bifunctor (bimap)
 import Data.DOM.Simple.Document ()
 import Data.DOM.Simple.Element (querySelector, appendChild)
 import Data.DOM.Simple.Window (document, globalWindow)
@@ -207,13 +208,9 @@ main = do
   where
     -- TODO: Use Aff instead of Eff for this.
     dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
-    dscb driver ds = do
-      let f = Foreign.unsafeReadTagged "Object" $ DS.val ds
-      case f of
-           -- Left _ -> trace "Foreign error"
-           Right str -> case (decodeEntries str) of
-              -- Left err      -> trace "Something went wrong parsing the entries. " ++ err
-              Right entries -> driver $ UpdateEntries entries
+    dscb driver ds =
+      case ((Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries) of
+        Right entries -> driver $ UpdateEntries entries
 
-    decodeEntries :: JObject -> Either String [Entry]
-    decodeEntries = fromObject >>> decodeJson
+    decodeEntries :: JObject -> Either Foreign.ForeignError [Entry]
+    decodeEntries = bimap Foreign.JSONError id <<< decodeJson <<< fromObject
