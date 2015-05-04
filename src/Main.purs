@@ -52,6 +52,7 @@ type State = { entries :: [Entry]     -- ^ All entries matching the tag
              , tag     :: Maybe Tag   -- ^ Currently selected tag, if any
              , newUrl  :: URL         -- ^ New URL to be submitted
              , newTags :: Set.Set Tag -- ^ New Tags to be submitted
+             , error   :: String      -- ^ Possible disasterous error
              }
 
 data Action
@@ -60,6 +61,7 @@ data Action
   | UpdateNewURL URL
   | UpdateNewTags String
   | UpdateEntries [Entry]
+  | ShowError String
 
 data Request
   = AddNewEntry State
@@ -70,8 +72,9 @@ emptyState :: State
 emptyState = { entries: mempty
              , tag: mempty
              -- TODO: Add a Monoid instance to URL
-             , newUrl: url ""
+             , newUrl: url mempty
              , newTags: Set.empty
+             , error: mempty
              }
 
 -- TODO: Remove those, or move to tests, once loading works.
@@ -101,11 +104,12 @@ demoState = emptyState { entries = demoEntries, tag = Just "animals" }
 update :: State -> Action -> State
 update s' a = updateState a s'
   where
-  updateState NoOp s = s
-  updateState (NewEntry e) s = s { entries = (unsafePrintId e) : s.entries }
-  updateState (UpdateNewURL e) s = s { newUrl = unsafePrintId e }
+  updateState NoOp s              = s
+  updateState (NewEntry e) s      = s { entries = (unsafePrintId e) : s.entries }
+  updateState (UpdateNewURL e) s  = s { newUrl  = unsafePrintId e }
   updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
   updateState (UpdateEntries e) s = s { entries = e }
+  updateState (ShowError e) s     = s { error   = e }
 
 -- | Handle a request to an external service
 handler :: forall eff.
@@ -211,6 +215,7 @@ main = do
     dscb driver ds =
       case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
         Right entries -> driver $ UpdateEntries entries
+        Left  err     -> driver $ ShowError $ show err
 
     decodeEntries :: JObject -> Either Foreign.ForeignError [Entry]
     decodeEntries = bimap Foreign.JSONError id <<< decodeJson <<< fromObject
