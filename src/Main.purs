@@ -209,7 +209,7 @@ main = do
     -- TODO: Use Aff instead of Eff for this.
     dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
     dscb driver ds =
-      case ((Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries) of
+      case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
         Right entries -> driver $ UpdateEntries entries
 
     decodeEntries :: JObject -> Either Foreign.ForeignError [Entry]
