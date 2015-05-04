@@ -14,8 +14,18 @@ $ npm run build
 ## Development
 
 ```bash
-# Running a dev server
-$ npm run watch
+# Continously build in the background
+$ pulp -w build
+
+# Run and watch the tests
+$ pulp -w test
+
+# Build for "production"
+$ gulp
+
+# Run a dev server
 $ npm run serve
+
+# Open the web page
 $ open http://localhost:8080
 ```
