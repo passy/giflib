@@ -38,6 +38,7 @@ import qualified Halogen.HTML.Events.Monad as E
 import qualified MDL as MDL
 import qualified MDL.Button as MDL
 import qualified MDL.Textfield as MDL
+import qualified MDL.Spinner as MDL
 import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.DataSnapshot as DS
@@ -137,7 +138,8 @@ ui = component $ render <$> stateful demoState update
   where
   render :: State -> H.HTML p (E.Event (AppEff eff) Action)
   render st =
-    H.div [ A.class_ $ A.className "gla-content" ]
+    H.div [ A.class_ $ A.className "gla-content" ] $
+      loadingSpinner st.loadingStatus <>
       [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
@@ -167,6 +169,12 @@ ui = component $ render <$> stateful demoState update
 
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
+
+    loadingSpinner :: LoadingStatus -> [H.HTML p (E.Event (AppEff eff) Action)]
+    loadingSpinner s = case s of
+                            Loading -> pure $ MDL.spinner true
+                            _       -> mempty -- TODO: Handle error here
+
 
     entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
     entryCard (Entry e) = H.div
