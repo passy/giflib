@@ -48,11 +48,17 @@ import Web.Giflib.Types (Tag(), Entry(..), uuid)
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
 
-type State = { entries :: [Entry]     -- ^ All entries matching the tag
-             , tag     :: Maybe Tag   -- ^ Currently selected tag, if any
-             , newUrl  :: URL         -- ^ New URL to be submitted
-             , newTags :: Set.Set Tag -- ^ New Tags to be submitted
-             , error   :: String      -- ^ Possible disasterous error
+data LoadingStatus
+ = Loading
+ | Loaded
+ | LoadingError String
+
+type State = { entries       :: [Entry]       -- ^ All entries matching the tag
+             , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
+             , newUrl        :: URL           -- ^ New URL to be submitted
+             , newTags       :: Set.Set Tag   -- ^ New Tags to be submitted
+             , error         :: String        -- ^ Global UI error to be shown
+             , loadingStatus :: LoadingStatus -- ^ List loading state
              }
 
 data Action
@@ -61,6 +67,7 @@ data Action
   | UpdateNewURL URL
   | UpdateNewTags String
   | UpdateEntries [Entry]
+  | UpdateLoadingStatus LoadingStatus
   | ShowError String
 
 data Request
@@ -75,6 +82,7 @@ emptyState = { entries: mempty
              , newUrl: url mempty
              , newTags: Set.empty
              , error: mempty
+             , loadingStatus: Loading
              }
 
 -- TODO: Remove those, or move to tests, once loading works.
