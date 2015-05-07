@@ -139,7 +139,6 @@ ui = component $ render <$> stateful demoState update
   render :: State -> H.HTML p (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ] $
-      loadingSpinner st.loadingStatus <>
       [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
@@ -162,7 +161,8 @@ ui = component $ render <$> stateful demoState update
                                      , elevation = MDL.ButtonRaised
                                      } ]
                ]
-      , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
+      ] <> loadingSpinner st.loadingStatus <>
+      [ H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
     where
