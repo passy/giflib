@@ -64,11 +64,11 @@ type State = { entries       :: [Entry]       -- ^ All entries matching the tag
 
 data Action
   = NoOp
+  | LoadingAction LoadingStatus Action
   | NewEntry Entry
   | UpdateNewURL URL
   | UpdateNewTags String
   | UpdateEntries [Entry]
-  | UpdateLoadingStatus LoadingStatus
   | ShowError String
 
 data Request
@@ -113,12 +113,13 @@ demoState = emptyState { entries = demoEntries, tag = Just "animals" }
 update :: State -> Action -> State
 update s' a = updateState a s'
   where
-  updateState NoOp s              = s
-  updateState (NewEntry e) s      = s { entries = (unsafePrintId e) : s.entries }
-  updateState (UpdateNewURL e) s  = s { newUrl  = unsafePrintId e }
-  updateState (UpdateNewTags e) s = s { newTags = unsafePrintId $ processTagInput e }
-  updateState (UpdateEntries e) s = s { entries = e }
-  updateState (ShowError e) s     = s { error   = e }
+  updateState NoOp s                = s
+  updateState (LoadingAction l a) s = updateState a $ s { loadingStatus = l }
+  updateState (NewEntry e) s        = s { entries = (unsafePrintId e) : s.entries }
+  updateState (UpdateNewURL e) s    = s { newUrl  = unsafePrintId e }
+  updateState (UpdateNewTags e) s   = s { newTags = unsafePrintId $ processTagInput e }
+  updateState (UpdateEntries e) s   = s { entries = e }
+  updateState (ShowError e) s       = s { error   = e }
 
 -- | Handle a request to an external service
 handler :: forall eff.
@@ -230,7 +231,7 @@ main = do
     dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
     dscb driver ds =
       case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
-        Right entries -> driver $ UpdateEntries entries
+        Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries)
         Left  err     -> driver $ ShowError $ show err
 
     decodeEntries :: JObject -> Either Foreign.ForeignError [Entry]
