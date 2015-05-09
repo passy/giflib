@@ -22,7 +22,7 @@ defaultTextfield = { type_: "text"
                    , value: mempty
                    }
 
-textfield :: forall p i. [A.Attr i] -> Textfield -> H.HTML p i
+textfield :: forall i. [A.Attr i] -> Textfield -> H.HTML i
 textfield attrs t =
   H.div [ A.classes mainClasses ]
     ([ H.input ([ A.class_ clsTextfieldInput
@@ -40,5 +40,5 @@ textfield attrs t =
           [ clsTextfield, clsJsTextfield ] ++
             if t.floatingLabel then [ clsFloatingTextfield ] else []
 
-textfield_ :: forall p i. Textfield -> H.HTML p i
+textfield_ :: forall i. Textfield -> H.HTML i
 textfield_ = textfield mempty

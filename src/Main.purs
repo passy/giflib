@@ -20,7 +20,7 @@ import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (Trace(), trace)
 import Halogen (runUI, Driver(), HalogenEffects())
-import Halogen.Component (component, Component(..))
+import Halogen.Component (Component(..))
 import Halogen.HTML.Target (URL(), url, runURL)
 import Halogen.Signal (SF1(..), stateful)
 
@@ -141,10 +141,10 @@ handler (AddNewEntry s) = do
                              , date: now
                              }
 
-ui :: forall p eff. Component p (E.Event (AppEff eff)) Action Action
-ui = component $ render <$> stateful demoState update
+ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
+ui = render <$> stateful demoState update
   where
-  render :: State -> H.HTML p (E.Event (AppEff eff) Action)
+  render :: State -> H.HTML (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ] $
       [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
@@ -178,7 +178,7 @@ ui = component $ render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
+    entryCard :: Entry -> H.HTML (E.Event (AppEff eff) Action)
     entryCard (Entry e) = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
