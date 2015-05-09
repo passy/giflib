@@ -178,7 +178,7 @@ ui = render <$> stateful demoState update
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
 
-    entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
+    entryCard :: Entry -> H.HTML (E.Event (AppEff eff) Action)
     entryCard (Entry e) = H.div
         -- TODO: halogen doesn't support keys at the moment which
         -- would certainly be desirable for diffing perf:
