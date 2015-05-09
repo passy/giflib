@@ -54,6 +54,13 @@ data LoadingStatus
  | Loaded
  | LoadingError String
 
+instance eqLoadingStatus :: Eq LoadingStatus where
+  (==) Loading Loading                    = true
+  (==) Loaded Loaded                      = true
+  (==) (LoadingError a) (LoadingError b)  = a == b
+  (==) _ _                                = false
+  (/=) a b                                = not (a == b)
+
 type State = { entries       :: [Entry]       -- ^ All entries matching the tag
              , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
              , newUrl        :: URL           -- ^ New URL to be submitted
@@ -162,20 +169,14 @@ ui = component $ render <$> stateful demoState update
                                      , elevation = MDL.ButtonRaised
                                      } ]
                ]
-      ] <> loadingSpinner st.loadingStatus <>
-      [ H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
+      , MDL.spinner (st.loadingStatus == Loading)
+      , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries
       ]
 
     where
 
     backgroundImage :: String -> A.Styles
     backgroundImage s = A.styles $ StrMap.singleton "backgroundImage" ("url(" ++ s ++ ")")
-
-    loadingSpinner :: LoadingStatus -> [H.HTML p (E.Event (AppEff eff) Action)]
-    loadingSpinner s = case s of
-                            Loading -> pure $ MDL.spinner true
-                            _       -> mempty -- TODO: Handle error here
-
 
     entryCard :: Entry -> H.HTML p (E.Event (AppEff eff) Action)
     entryCard (Entry e) = H.div
