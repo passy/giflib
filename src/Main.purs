@@ -139,6 +139,9 @@ handler :: forall eff.
 handler (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
+  -- TODO ...
+  fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
+  children <- liftEff $ FB.child "entries" fb
   let entry = Entry { id: uuid $ show id'
                     , tags: s.newTags
                     , url: s.newUrl

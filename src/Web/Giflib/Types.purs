@@ -6,7 +6,7 @@ import Halogen.HTML.Target (URL(), url)
 import Data.Argonaut (foldJsonObject)
 import Data.Argonaut.Combinators ((.?), (?>>=))
 import Data.Argonaut.Core (Json(..), JArray(..), JObject(..))
-import Data.Argonaut.Decode (DecodeJson, decodeJson)
+import Data.Argonaut.Decode (DecodeJson, EncodeJson, decodeJson)
 import Web.Giflib.Internal.Unsafe (undefined)
 
 import qualified Data.StrMap as StrMap
@@ -48,7 +48,7 @@ instance showUUID :: Show UUID where
 uuid :: String -> UUID
 uuid = UUID
 
-instance decodeJsonEntry :: DecodeJson [Entry] where
+instance decodeJsonEntries :: DecodeJson [Entry] where
   decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntries
 
 decodeEntries :: StrMap.StrMap Json -> Either String [Entry]
@@ -68,3 +68,6 @@ decodeEntries json =
                                 , tags: Set.fromList tags
                                 , date: date
                                 }
+
+instance encodeJsonEntries :: EncodeJson [Entry] where
+  encodeJson es = ...
