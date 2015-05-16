@@ -83,7 +83,9 @@ data Action
 data Request
   = AddNewEntry State
 
-type AppEff eff = HalogenEffects ( uuid :: NUUID.UUIDEff , now :: Date.Now | eff )
+type AppEff eff = HalogenEffects ( uuid :: NUUID.UUIDEff
+                                 , now :: Date.Now
+                                 , firebase :: FB.FirebaseEff | eff)
 
 emptyState :: State
 emptyState = { entries: mempty
@@ -137,11 +139,12 @@ handler :: forall eff.
 handler (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
-  E.yield $ NewEntry $ Entry { id: uuid $ show id'
-                             , tags: s.newTags
-                             , url: s.newUrl
-                             , date: now
-                             }
+  let entry = Entry { id: uuid $ show id'
+                    , tags: s.newTags
+                    , url: s.newUrl
+                    , date: now
+                    }
+  E.yield $ NewEntry $ entry
 
 ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
 ui = render <$> stateful demoState update

@@ -6,12 +6,13 @@ module Web.Firebase
 )
 where
 
+import Control.Monad.Eff (Eff())
+import Data.Foreign (Foreign())
+import Data.Function (Fn1(), Fn2(), Fn3(), Fn4(), runFn1, runFn2, runFn3, runFn4)
 import Data.Maybe (Maybe())
 import Data.Nullable (toNullable, Nullable())
-import Control.Monad.Eff (Eff())
-import Web.Firebase.Types (Firebase(), FirebaseEff(), FirebaseErr(), DataSnapshot())
 import Halogen.HTML.Target (URL(), runURL)
-import Data.Function (Fn1(), Fn2(), Fn4(), runFn1, runFn2, runFn4)
+import Web.Firebase.Types (Firebase(), FirebaseEff(), FirebaseErr(), DataSnapshot())
 import Web.Giflib.Internal.Unsafe (unsafeEvalEff)
 
 
@@ -57,7 +58,12 @@ foreign import onImpl """
       return fb.on(eventType, callback, cancelCallback);
     }
   }
-""" :: forall eff. Fn4 String (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit) (Nullable (FirebaseErr -> Eff eff Unit)) Firebase (Eff (firebase :: FirebaseEff | eff) Unit)
+""" :: forall eff. Fn4
+                   String
+                   (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit)
+                   (Nullable (FirebaseErr -> Eff eff Unit))
+                   Firebase
+                   (Eff (firebase :: FirebaseEff | eff) Unit)
 
 on :: forall eff.
       EventType ->
@@ -66,3 +72,22 @@ on :: forall eff.
       Firebase ->
       Eff (firebase :: FirebaseEff | eff) Unit
 on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (toNullable cb) fb
+
+foreign import setImpl """
+function setImpl(value, onComplete, fb) {
+  return function () {
+    fb.set(value, onComplete);
+  }
+}
+""" :: forall eff. Fn3
+                   Foreign
+                   (Nullable (Nullable (FirebaseErr -> Eff eff Unit)))
+                   Firebase
+                   (Eff (firebase :: FirebaseEff | eff) Unit)
+
+set :: forall eff.
+       Foreign ->
+       Maybe (Maybe (FirebaseErr -> Eff eff Unit)) ->
+       Firebase ->
+       Eff (firebase :: FirebaseEff | eff) Unit
+set value cb fb = runFn3 setImpl value (toNullable (toNullable <$> cb)) fb
