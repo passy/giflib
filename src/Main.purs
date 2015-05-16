@@ -13,6 +13,8 @@ import Data.DOM.Simple.Document ()
 import Data.DOM.Simple.Element (querySelector, appendChild)
 import Data.DOM.Simple.Window (document, globalWindow)
 import Data.Either (Either(Left, Right))
+import Data.Enum (fromEnum)
+import Data.Foldable (intercalate)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
@@ -25,8 +27,8 @@ import Halogen.HTML.Target (URL(), url, runURL)
 import Halogen.Signal (SF1(..), stateful)
 
 import qualified Data.Date as Date
-import qualified Data.Date.Locale as Date
 import qualified Data.Int as Int
+import qualified Data.Date.UTC as Date
 import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
 import qualified Halogen.HTML as H
@@ -202,7 +204,15 @@ ui = render <$> stateful demoState update
         ]
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
-formatEntryDatetime e = show e.date
+formatEntryDatetime e =
+  intercalate "-" $ [ show <<< Int.toNumber <<< getYear <<< Date.year $ e.date
+                    , show <<< (+1) <<< fromEnum <<< Date.month $ e.date
+                    , show <<< Int.toNumber <<< getDay <<< Date.dayOfMonth $ e.date ]
+  where
+    getDay :: Date.DayOfMonth -> Int.Int
+    getDay (Date.DayOfMonth i) = i
+    getYear :: Date.Year -> Int.Int
+    getYear (Date.Year i) = i
 
 formatEntryTags :: forall e. { tags :: Set.Set Tag | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) $ Set.toList e.tags
