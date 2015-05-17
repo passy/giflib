@@ -77,7 +77,7 @@ on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (
 foreign import setImpl """
 function setImpl(value, onComplete, fb) {
   return function () {
-    fb.set(value, onComplete);
+    fb.set(value, !!onComplete ? onComplete : undefined);
   }
 }
 """ :: forall eff. Fn3

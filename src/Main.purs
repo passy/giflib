@@ -139,16 +139,17 @@ handler :: forall eff.
 handler (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
-  -- TODO ...
-  fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
-  children <- liftEff $ FB.child "entries" fb
-  liftEff $ FB.set (Foreign.toForeign $ encodeJson s.entries) Nothing children
 
   let entry = Entry { id: uuid $ show id'
                     , tags: s.newTags
                     , url: s.newUrl
                     , date: now
                     }
+
+  -- TODO ...
+  fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
+  children <- liftEff $ FB.child "entries" fb
+  liftEff $ FB.set (Foreign.toForeign $ encodeJson (s.entries : [entry])) Nothing children
   E.yield $ NewEntry $ entry
 
 ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
