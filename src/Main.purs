@@ -5,7 +5,7 @@ import Control.Functor (($>))
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
-import Data.Argonaut (decodeJson)
+import Data.Argonaut (decodeJson, encodeJson)
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Array (map, concat, (!!))
 import Data.Bifunctor (bimap)
@@ -139,6 +139,11 @@ handler :: forall eff.
 handler (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
+  -- TODO ...
+  fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
+  children <- liftEff $ FB.child "entries" fb
+
+  liftEff $ trace $ "woot: " ++ (show $ encodeJson s.entries)
   let entry = Entry { id: uuid $ show id'
                     , tags: s.newTags
                     , url: s.newUrl

@@ -2,16 +2,18 @@ module Web.Giflib.Types where
 
 import Data.Array (snoc)
 import Data.Either (Either(Left))
-import Halogen.HTML.Target (URL(), url)
+import Halogen.HTML.Target (URL(), url, runURL)
 import Data.Argonaut (foldJsonObject)
-import Data.Argonaut.Combinators ((.?), (?>>=))
-import Data.Argonaut.Core (Json(..), JArray(..), JObject(..))
+import Data.Argonaut.Combinators ((.?), (?>>=), (~>), (:=))
+import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject)
 import Data.Argonaut.Decode (DecodeJson, decodeJson)
+import Data.Argonaut.Encode (EncodeJson)
+import Data.Foldable (foldl)
 import Web.Giflib.Internal.Unsafe (undefined)
 
-import qualified Data.StrMap as StrMap
-import qualified Data.Set as Set
 import qualified Data.Date as Date
+import qualified Data.Set as Set
+import qualified Data.StrMap as StrMap
 import qualified Data.Time as Time
 
 type Tag = String
@@ -48,7 +50,7 @@ instance showUUID :: Show UUID where
 uuid :: String -> UUID
 uuid = UUID
 
-instance decodeJsonEntry :: DecodeJson [Entry] where
+instance decodeJsonEntries :: DecodeJson [Entry] where
   decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntries
 
 decodeEntries :: StrMap.StrMap Json -> Either String [Entry]
@@ -68,3 +70,20 @@ decodeEntries json =
                                 , tags: Set.fromList tags
                                 , date: date
                                 }
+
+instance encodeJsonEntries :: EncodeJson [Entry] where
+  encodeJson es = foldl encodeEntry jsonEmptyObject es
+
+encodeEntry :: Json -> Entry -> Json
+encodeEntry acc (Entry e)
+  =  (strId e.id) := (  "uri"  := runURL e.url
+                     ~> "tags" := Set.toList e.tags
+                     ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
+                     ~> jsonEmptyObject )
+  ~> acc
+  where
+    strId :: UUID -> String
+    strId (UUID i) = i
+
+    runMilliseconds :: Time.Milliseconds -> Number
+    runMilliseconds (Time.Milliseconds n) = n
