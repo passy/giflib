@@ -2,12 +2,13 @@ module Web.Firebase
 ( newFirebase
 , child
 , on
+, set
 , EventType(..)
 )
 where
 
 import Control.Monad.Eff (Eff())
-import Data.Foreign (Foreign())
+import Data.Foreign (Foreign(), toForeign)
 import Data.Function (Fn1(), Fn2(), Fn3(), Fn4(), runFn1, runFn2, runFn3, runFn4)
 import Data.Maybe (Maybe())
 import Data.Nullable (toNullable, Nullable())
@@ -76,7 +77,7 @@ on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (
 foreign import setImpl """
 function setImpl(value, onComplete, fb) {
   return function () {
-    fb.set(value, onComplete);
+    fb.set(value, !!onComplete ? onComplete : undefined);
   }
 }
 """ :: forall eff. Fn3
