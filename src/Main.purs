@@ -142,8 +142,8 @@ handler (AddNewEntry s) = do
   -- TODO ...
   fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- liftEff $ FB.child "entries" fb
+  FB.set (encodeJson s.entries) Nothing children
 
-  liftEff $ trace $ "woot: " ++ (show $ encodeJson s.entries)
   let entry = Entry { id: uuid $ show id'
                     , tags: s.newTags
                     , url: s.newUrl
