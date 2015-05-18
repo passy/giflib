@@ -146,10 +146,10 @@ handler (AddNewEntry s) = do
                     , date: now
                     }
 
-  -- TODO ...
+  -- TODO: ... should be obvious.
   fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- liftEff $ FB.child "entries" fb
-  liftEff $ FB.set (Foreign.toForeign $ encodeJson (s.entries ++ [entry])) Nothing children
+  liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
   E.yield $ NewEntry $ entry
 
 ui :: forall eff. Component (E.Event (AppEff eff)) Action Action

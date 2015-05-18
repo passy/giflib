@@ -1,9 +1,10 @@
 module Web.Firebase
-( newFirebase
+( EventType(..)
 , child
+, newFirebase
 , on
+, push
 , set
-, EventType(..)
 )
 where
 
@@ -75,11 +76,11 @@ on :: forall eff.
 on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (toNullable cb) fb
 
 foreign import setImpl """
-function setImpl(value, onComplete, fb) {
-  return function () {
-    fb.set(value, !!onComplete ? onComplete : undefined);
+  function setImpl(value, onComplete, fb) {
+    return function () {
+      fb.set(value, onComplete === null ? undefined : onComplete);
+    };
   }
-}
 """ :: forall eff. Fn3
                    Foreign
                    (Nullable (Nullable (FirebaseErr -> Eff eff Unit)))
@@ -92,3 +93,22 @@ set :: forall eff.
        Firebase ->
        Eff (firebase :: FirebaseEff | eff) Unit
 set value cb fb = runFn3 setImpl value (toNullable (toNullable <$> cb)) fb
+
+foreign import pushImpl """
+  function pushImpl(value, onComplete, fb) {
+    return function () {
+      fb.push(value, onComplete === null ? undefined : onComplete);
+    };
+  }
+""" :: forall eff. Fn3
+                   Foreign
+                   (Nullable (Nullable (FirebaseErr -> Eff eff Unit)))
+                   Firebase
+                   (Eff (firebase :: FirebaseEff | eff) Unit)
+
+push :: forall eff.
+        Foreign ->
+        Maybe (Maybe (FirebaseErr -> Eff eff Unit)) ->
+        Firebase ->
+        Eff (firebase :: FirebaseEff | eff) Unit
+push value cb fb = runFn3 pushImpl value (toNullable (toNullable <$> cb)) fb

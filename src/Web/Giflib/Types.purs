@@ -75,15 +75,21 @@ instance encodeJsonEntries :: EncodeJson [Entry] where
   encodeJson es = foldl encodeEntry jsonEmptyObject es
 
 encodeEntry :: Json -> Entry -> Json
-encodeEntry acc (Entry e)
-  =  (strId e.id) := (  "uri"  := runURL e.url
-                     ~> "tags" := Set.toList e.tags
-                     ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
-                     ~> jsonEmptyObject )
+encodeEntry acc ex@(Entry e)
+  =  (strId e.id) := ( encodeEntryInner ex )
   ~> acc
   where
     strId :: UUID -> String
     strId (UUID i) = i
 
+encodeEntryInner :: Entry -> Json
+encodeEntryInner (Entry e) =  "uri"  := runURL e.url
+                           ~> "tags" := Set.toList e.tags
+                           ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
+                           ~> jsonEmptyObject
+  where
     runMilliseconds :: Time.Milliseconds -> Number
     runMilliseconds (Time.Milliseconds n) = n
+
+instance encodeJsonEntry :: EncodeJson Entry where
+  encodeJson = encodeEntryInner
