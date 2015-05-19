@@ -72,7 +72,7 @@ decodeEntries json =
                                 }
 
 instance encodeJsonEntries :: EncodeJson [Entry] where
-  encodeJson es = foldl encodeEntry jsonEmptyObject es
+  encodeJson = foldl encodeEntry jsonEmptyObject
 
 encodeEntry :: Json -> Entry -> Json
 encodeEntry acc ex@(Entry e)
