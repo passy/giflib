@@ -71,8 +71,8 @@ decodeEntries json =
                                 , date: date
                                 }
 
-instance encodeJsonEntries :: EncodeJson [Entry] where
-  encodeJson = foldl encodeEntry jsonEmptyObject
+encodeEntriesObject :: [Entry] -> Json
+encodeEntriesObject = foldl encodeEntry jsonEmptyObject
 
 encodeEntry :: Json -> Entry -> Json
 encodeEntry acc ex@(Entry e)

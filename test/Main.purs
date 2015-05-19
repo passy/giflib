@@ -1,7 +1,7 @@
 module Test.Main where
 
 import Test.Unit
-import Web.Giflib.Types (Entry(..))
+import Web.Giflib.Types (Entry(..), encodeEntriesObject)
 import Test.Fixtures (validEntriesJson, validEntriesRecord, invalidEntriesJson)
 import Data.Argonaut (encodeJson, decodeJson, jsonParser)
 import Data.Either (Either(), isRight, isLeft)
@@ -31,4 +31,4 @@ decodeEntries :: String -> Either String [Entry]
 decodeEntries v = jsonParser v >>= decodeJson
 
 encodeEntries :: [Entry] -> String
-encodeEntries = show <<< encodeJson
+encodeEntries = show <<< encodeEntriesObject
