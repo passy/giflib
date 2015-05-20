@@ -150,7 +150,9 @@ handler (AddNewEntry s) = do
   fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- liftEff $ FB.child "entries" fb
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
-  E.yield $ NewEntry $ entry
+  -- Let's try this, pushing a new entry can conflict with the local FB
+  -- response.
+  E.yield $ NoOp
 
 ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
 ui = render <$> stateful demoState update
