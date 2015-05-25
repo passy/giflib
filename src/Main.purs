@@ -1,10 +1,13 @@
 module Main where
 
+
 import Control.Alternative
 import Control.Functor (($>))
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
+import Control.Monad.Reader (runReader)
+import Control.Monad.Reader.Trans (ReaderT(), runReaderT)
 import Data.Argonaut (decodeJson, encodeJson)
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Array (map, concat, (!!))
@@ -15,6 +18,7 @@ import Data.DOM.Simple.Window (document, globalWindow)
 import Data.Either (Either(Left, Right))
 import Data.Enum (fromEnum)
 import Data.Foldable (intercalate)
+import Data.Identity (Identity(), runIdentity)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
@@ -25,7 +29,6 @@ import Halogen (runUI, Driver(), HalogenEffects())
 import Halogen.Component (Component(..))
 import Halogen.HTML.Target (URL(), url, runURL)
 import Halogen.Signal (SF1(..), stateful)
-
 import qualified Data.Date as Date
 import qualified Data.Int as Int
 import qualified Data.Date.UTC as Date
@@ -80,8 +83,9 @@ data Action
   | UpdateEntries [Entry]
   | ShowError String
 
--- TODO: Wrap that in a Reader so we can access this everywhere.
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
+
+type AppEnv = ReaderT AppConfig
 
 data Request
   = AddNewEntry State
@@ -135,8 +139,8 @@ handler (AddNewEntry s) = do
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
   E.yield $ ResetNewForm
 
-ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
-ui = render <$> stateful emptyState update
+ui :: forall eff. AppEnv Identity (Component (E.Event (AppEff eff)) Action Action)
+ui = return $ render <$> stateful emptyState update
   where
   render :: State -> H.HTML (E.Event (AppEff eff) Action)
   render st =
@@ -214,10 +218,12 @@ processTagInput = trim >>> split " " >>> Set.fromList
 
 main = do
   trace "Booting. Beep. Boop."
-  Tuple node driver <- runUI ui
-
-  -- This should be wrapped in an AppEnv, passed through a Reader.
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
+  let conf = AppConfig { firebase: fb }
+
+  -- XXX: This is the same as runReader
+  Tuple node driver <- runUI $ runIdentity $ runReaderT ui conf
+
   children <- FB.child "entries" fb
   FB.on FB.Value (dscb driver) Nothing children
 
