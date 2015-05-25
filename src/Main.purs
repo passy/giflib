@@ -7,6 +7,7 @@ import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 import Control.Monad.Reader (runReader)
+import Control.Monad.Reader.Class (ask)
 import Control.Monad.Reader.Trans (ReaderT(), runReaderT)
 import Data.Argonaut (decodeJson, encodeJson)
 import Data.Argonaut.Core (JObject(), fromObject)
@@ -137,13 +138,16 @@ handler (AddNewEntry s) = do
   fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- liftEff $ FB.child "entries" fb
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
-  E.yield $ ResetNewForm
+  E.yield ResetNewForm
 
 ui :: forall eff. AppEnv Identity (Component (E.Event (AppEff eff)) Action Action)
-ui = return $ render <$> stateful emptyState update
+ui = do
+  -- TODO: Push this further down, I don't want to ask here.
+  conf <- ask
+  return $ render conf <$> stateful emptyState update
   where
-  render :: State -> H.HTML (E.Event (AppEff eff) Action)
-  render st =
+  render :: AppConfig -> State -> H.HTML (E.Event (AppEff eff) Action)
+  render conf st =
     H.div [ A.class_ $ A.className "gla-content" ] $
       [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
