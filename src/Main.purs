@@ -123,7 +123,7 @@ update s' a = updateState a s'
 -- | Handle a request to an external service
 handler :: forall eff.
   Request ->
-  E.Event (AppEff eff) Action
+  AppEnv (E.Event (AppEff eff)) Action
 handler (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
@@ -138,7 +138,7 @@ handler (AddNewEntry s) = do
   fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- liftEff $ FB.child "entries" fb
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
-  E.yield ResetNewForm
+  return $ E.yield ResetNewForm
 
 ui :: forall eff. AppEnv Identity (Component (E.Event (AppEff eff)) Action Action)
 ui = do
