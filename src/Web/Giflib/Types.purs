@@ -50,6 +50,9 @@ instance showUUID :: Show UUID where
 uuid :: String -> UUID
 uuid = UUID
 
+runUUID :: UUID -> String
+runUUID (UUID s) = s
+
 instance decodeJsonEntries :: DecodeJson [Entry] where
   decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntries
 
@@ -76,11 +79,8 @@ encodeEntriesObject = foldl encodeEntry jsonEmptyObject
 
 encodeEntry :: Json -> Entry -> Json
 encodeEntry acc ex@(Entry e)
-  =  (strId e.id) := ( encodeEntryInner ex )
+  =  (runUUID e.id) := ( encodeEntryInner ex )
   ~> acc
-  where
-    strId :: UUID -> String
-    strId (UUID i) = i
 
 encodeEntryInner :: Entry -> Json
 encodeEntryInner (Entry e) =  "uri"  := runURL e.url

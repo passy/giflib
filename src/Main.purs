@@ -47,7 +47,7 @@ import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 import qualified Data.Foreign as Foreign
 
-import Web.Giflib.Types (Tag(), Entry(..), uuid)
+import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID)
 import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined, unsafeEvalEff)
 import Web.Giflib.Internal.Debug (Console(), log)
 
@@ -196,10 +196,8 @@ ui = render <$> stateful demoState update
 
     entryCard :: Entry -> H.HTML (E.Event (AppEff eff) Action)
     entryCard (Entry e) = H.div
-        -- TODO: halogen doesn't support keys at the moment which
-        -- would certainly be desirable for diffing perf:
-        -- https://github.com/Matt-Esch/virtual-dom/blob/7cd99a160f8d7c9953e71e0b26a740dae40e55fc/docs/vnode.md#arguments
-        [ A.classes [MDL.card, MDL.shadow 3]
+        [ A.classes [ MDL.card, MDL.shadow 3 ]
+        , A.key $ runUUID e.id
         ]
         [ H.div [ A.class_ MDL.cardImageContainer
                 , A.style $ backgroundImage $ runURL e.url
@@ -240,6 +238,7 @@ main = do
   trace "Booting. Beep. Boop."
   Tuple node driver <- runUI ui
 
+  -- This should be wrapped in an AppEnv, passed through a Reader.
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- FB.child "entries" fb
   FB.on FB.Value (dscb driver) Nothing children
