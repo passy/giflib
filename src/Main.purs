@@ -73,8 +73,8 @@ type State = { entries       :: [Entry]       -- ^ All entries matching the tag
 
 data Action
   = NoOp
+  | ResetNewForm
   | LoadingAction LoadingStatus Action
-  | NewEntry Entry
   | UpdateNewURL URL
   | UpdateNewTags String
   | UpdateEntries [Entry]
@@ -104,10 +104,14 @@ update :: State -> Action -> State
 update s' a = updateState a s'
   where
   updateState NoOp s                = s
+  updateState ResetNewForm s        = s { newUrl  = url mempty
+                                        -- Typechecker doesn't like Set.empty
+                                        -- here, I don't know why.
+                                        , newTags = Set.fromList []
+                                        }
   updateState (LoadingAction l a) s = updateState a $ s { loadingStatus = l }
-  updateState (NewEntry e) s        = s { entries = (unsafePrintId e) : s.entries }
-  updateState (UpdateNewURL e) s    = s { newUrl  = unsafePrintId e }
-  updateState (UpdateNewTags e) s   = s { newTags = unsafePrintId $ processTagInput e }
+  updateState (UpdateNewURL e) s    = s { newUrl  = e }
+  updateState (UpdateNewTags e) s   = s { newTags = processTagInput e }
   updateState (UpdateEntries e) s   = s { entries = e }
   updateState (ShowError e) s       = s { error   = e }
 
@@ -125,13 +129,11 @@ handler (AddNewEntry s) = do
                     , date: now
                     }
 
-  -- TODO: ... should be obvious.
+  -- TODO: This should ask the Reader for an FB instance
   fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   children <- liftEff $ FB.child "entries" fb
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
-  -- Let's try this, pushing a new entry can conflict with the local FB
-  -- response.
-  E.yield $ NoOp
+  E.yield $ ResetNewForm
 
 ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
 ui = render <$> stateful emptyState update
