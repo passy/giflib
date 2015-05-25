@@ -80,6 +80,9 @@ data Action
   | UpdateEntries [Entry]
   | ShowError String
 
+-- TODO: Wrap that in a Reader so we can access this everywhere.
+newtype AppConfig = AppConfig { firebase :: FB.Firebase }
+
 data Request
   = AddNewEntry State
 
