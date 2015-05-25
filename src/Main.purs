@@ -100,30 +100,6 @@ emptyState = { entries: mempty
              , loadingStatus: Loading
              }
 
--- TODO: Remove those, or move to tests, once loading works.
-demoEntries :: [Entry]
-demoEntries = [ Entry { id: uuid "CDF20EF7-A181-47B7-AB6B-5E0B994F6176"
-                      , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
-                      , tags: Set.fromList [ "hamster", "party", "animals" ]
-                      , date: fromJust $ Date.fromString "2015-04-01 13:37:00"
-                      }
-              , Entry { id: uuid "EA72E9A5-0EFA-44A3-98AA-7598C8E5CD14"
-                      , url: url "http://media.giphy.com/media/lkimmb3hVhjvWF0KA/giphy.gif"
-                      , tags: Set.fromList [ "cat", "wiggle", "animals" ]
-                      , date: fromJust $ Date.fromString "2015-01-01 00:01:02"
-                      }
-              ]
-
-additionalDemoEntry :: Entry
-additionalDemoEntry = Entry { id: uuid "EA72E9A5-0EFA-45A3-98AA-7598C8E5CD14"
-                            , url: url "http://media.giphy.com/media/pOEauzdwvAzok/giphy.gif"
-                            , tags: Set.fromList [ "taylor", "woot" ]
-                            , date: fromJust $ Date.fromString "2015-02-03 00:02:03"
-                            }
-
-demoState :: State
-demoState = emptyState { entries = demoEntries, tag = Just "animals" }
-
 update :: State -> Action -> State
 update s' a = updateState a s'
   where
@@ -158,7 +134,7 @@ handler (AddNewEntry s) = do
   E.yield $ NoOp
 
 ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
-ui = render <$> stateful demoState update
+ui = render <$> stateful emptyState update
   where
   render :: State -> H.HTML (E.Event (AppEff eff) Action)
   render st =
