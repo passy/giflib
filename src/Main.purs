@@ -3,6 +3,7 @@ module Main where
 
 import Control.Alternative
 import Control.Functor (($>))
+import Control.Monad.Trans (lift)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
@@ -140,14 +141,11 @@ handler (AddNewEntry s) = do
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
   return $ E.yield ResetNewForm
 
-ui :: forall eff. AppEnv Identity (Component (E.Event (AppEff eff)) Action Action)
-ui = do
-  -- TODO: Push this further down, I don't want to ask here.
-  conf <- ask
-  return $ render conf <$> stateful emptyState update
+ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
+ui = render <$> stateful emptyState update
   where
-  render :: AppConfig -> State -> H.HTML (E.Event (AppEff eff) Action)
-  render conf st =
+  render :: State -> H.HTML (E.Event (AppEff eff) Action)
+  render st =
     H.div [ A.class_ $ A.className "gla-content" ] $
       [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
@@ -225,8 +223,7 @@ main = do
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   let conf = AppConfig { firebase: fb }
 
-  -- XXX: This is the same as runReader
-  Tuple node driver <- runUI $ runIdentity $ runReaderT ui conf
+  Tuple node driver <- runUI ui
 
   children <- FB.child "entries" fb
   FB.on FB.Value (dscb driver) Nothing children
