@@ -1,10 +1,15 @@
 module Main where
 
+
 import Control.Alternative
 import Control.Functor (($>))
+import Control.Monad.Trans (lift)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
+import Control.Monad.Reader
+import Control.Monad.Reader.Class
+import Control.Monad.Reader.Trans
 import Data.Argonaut (decodeJson, encodeJson)
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Array (map, concat, (!!))
@@ -15,6 +20,7 @@ import Data.DOM.Simple.Window (document, globalWindow)
 import Data.Either (Either(Left, Right))
 import Data.Enum (fromEnum)
 import Data.Foldable (intercalate)
+import Data.Identity (Identity(), runIdentity)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
@@ -25,7 +31,6 @@ import Halogen (runUI, Driver(), HalogenEffects())
 import Halogen.Component (Component(..))
 import Halogen.HTML.Target (URL(), url, runURL)
 import Halogen.Signal (SF1(..), stateful)
-
 import qualified Data.Date as Date
 import qualified Data.Int as Int
 import qualified Data.Date.UTC as Date
@@ -80,8 +85,9 @@ data Action
   | UpdateEntries [Entry]
   | ShowError String
 
--- TODO: Wrap that in a Reader so we can access this everywhere.
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
+
+type AppEnv = ReaderT AppConfig
 
 data Request
   = AddNewEntry State
@@ -116,32 +122,32 @@ update s' a = updateState a s'
   updateState (ShowError e) s       = s { error   = e }
 
 -- | Handle a request to an external service
-handler :: forall eff.
+handler :: forall eff m.
+  AppConfig ->
   Request ->
   E.Event (AppEff eff) Action
-handler (AddNewEntry s) = do
+handler (AppConfig conf) (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
-
   let entry = Entry { id: uuid $ show id'
                     , tags: s.newTags
                     , url: s.newUrl
                     , date: now
                     }
 
-  -- TODO: This should ask the Reader for an FB instance
-  fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
-  children <- liftEff $ FB.child "entries" fb
+  -- TODO: Would be nice to have a MonadReader/ReaderT for this. Like, really
+  -- nice. But I'm too stupid.
+  children <- liftEff $ FB.child "entries" conf.firebase
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
-  E.yield $ ResetNewForm
+  E.yield ResetNewForm
 
-ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
-ui = render <$> stateful emptyState update
+ui :: forall eff. AppConfig -> Component (E.Event (AppEff eff)) Action Action
+ui conf = render <$> stateful emptyState update
   where
   render :: State -> H.HTML (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ] $
-      [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
+      [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler conf $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
@@ -214,10 +220,11 @@ processTagInput = trim >>> split " " >>> Set.fromList
 
 main = do
   trace "Booting. Beep. Boop."
-  Tuple node driver <- runUI ui
-
-  -- This should be wrapped in an AppEnv, passed through a Reader.
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
+  let conf = AppConfig { firebase: fb }
+
+  Tuple node driver <- runUI $ ui conf
+
   children <- FB.child "entries" fb
   FB.on FB.Value (dscb driver) Nothing children
 
