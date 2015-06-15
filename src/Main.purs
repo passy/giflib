@@ -7,9 +7,9 @@ import Control.Monad.Trans (lift)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
-import Control.Monad.Reader (runReader)
-import Control.Monad.Reader.Class (ask)
-import Control.Monad.Reader.Trans (ReaderT(), runReaderT)
+import Control.Monad.Reader
+import Control.Monad.Reader.Class
+import Control.Monad.Reader.Trans
 import Data.Argonaut (decodeJson, encodeJson)
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Array (map, concat, (!!))
@@ -122,32 +122,32 @@ update s' a = updateState a s'
   updateState (ShowError e) s       = s { error   = e }
 
 -- | Handle a request to an external service
-handler :: forall eff.
+handler :: forall eff m.
+  AppConfig ->
   Request ->
-  AppEnv (E.Event (AppEff eff)) Action
-handler (AddNewEntry s) = do
+  E.Event (AppEff eff) Action
+handler (AppConfig conf) (AddNewEntry s) = do
   id' <- liftEff NUUID.v4
   now <- liftEff Date.now
-
   let entry = Entry { id: uuid $ show id'
                     , tags: s.newTags
                     , url: s.newUrl
                     , date: now
                     }
 
-  -- TODO: This should ask the Reader for an FB instance
-  fb <- liftEff $ FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
-  children <- liftEff $ FB.child "entries" fb
+  -- TODO: Would be nice to have a MonadReader/ReaderT for this. Like, really
+  -- nice. But I'm too stupid.
+  children <- liftEff $ FB.child "entries" conf.firebase
   liftEff $ FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
-  return $ E.yield ResetNewForm
+  E.yield ResetNewForm
 
-ui :: forall eff. Component (E.Event (AppEff eff)) Action Action
-ui = render <$> stateful emptyState update
+ui :: forall eff. AppConfig -> Component (E.Event (AppEff eff)) Action Action
+ui conf = render <$> stateful emptyState update
   where
   render :: State -> H.HTML (E.Event (AppEff eff) Action)
   render st =
     H.div [ A.class_ $ A.className "gla-content" ] $
-      [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler $ (AddNewEntry st))
+      [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler conf $ (AddNewEntry st))
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
@@ -223,7 +223,7 @@ main = do
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   let conf = AppConfig { firebase: fb }
 
-  Tuple node driver <- runUI ui
+  Tuple node driver <- runUI $ ui conf
 
   children <- FB.child "entries" fb
   FB.on FB.Value (dscb driver) Nothing children
