@@ -1,6 +1,5 @@
 module Main where
 
-
 import Control.Alternative
 import Control.Functor (($>))
 import Control.Monad.Trans (lift)
@@ -217,7 +216,6 @@ processTagInput :: String -> Set.Set Tag
 processTagInput = trim >>> split " " >>> Set.fromList
 
 -- Application Main
-
 main = do
   trace "Booting. Beep. Boop."
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
