@@ -33,7 +33,7 @@ button t =
         btnRaisedClass = case t.elevation of
                               ButtonRaised -> pure "mdl-button--raised"
                               ButtonFlat   -> mempty
-        btnRippleClass :: [String] -- Type unification fails otherwise.
+        btnRippleClass :: (Array String) -- Type unification fails otherwise.
         btnRippleClass = if t.ripple
                             then pure "mdl-js-ripple-effect"
                             else mempty

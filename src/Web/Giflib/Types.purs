@@ -53,19 +53,19 @@ uuid = UUID
 runUUID :: UUID -> String
 runUUID (UUID s) = s
 
-instance decodeJsonEntries :: DecodeJson [Entry] where
+instance decodeJsonEntries :: DecodeJson (Array Entry) where
   decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntries
 
-decodeEntries :: StrMap.StrMap Json -> Either String [Entry]
+decodeEntries :: StrMap.StrMap Json -> Either String (Array Entry)
 decodeEntries json =
   StrMap.foldM parse [] json
   where
-    parse :: [Entry] -> String -> Json -> Either String [Entry]
+    parse :: (Array Entry) -> String -> Json -> Either String (Array Entry)
     parse acc key json = do
       obj <- decodeJson json
       url' <- (obj .? "uri") :: Either String String
       tstamp <- (obj .? "date") :: Either String Number
-      tags <- (obj .? "tags") :: Either String [Tag]
+      tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 
       return $ snoc acc $ Entry { id: uuid key
@@ -74,7 +74,7 @@ decodeEntries json =
                                 , date: date
                                 }
 
-encodeEntriesObject :: [Entry] -> Json
+encodeEntriesObject :: (Array Entry) -> Json
 encodeEntriesObject = foldl encodeEntry jsonEmptyObject
 
 encodeEntry :: Json -> Entry -> Json

@@ -11,19 +11,9 @@ import Data.Foreign (Foreign(), toForeign)
 import Debug.Trace (trace)
 
 
-foreign import unsafePerformEff
-  """
-  function unsafePerformEff(f) {
-    return f();
-  }
-  """ :: forall a eff. Eff eff a -> a
+foreign import unsafePerformEff :: forall a eff. Eff eff a -> a
 
-foreign import showForeign
-  """
-  function showForeign(a) {
-    return JSON.stringify(a);
-  }
-  """ :: Foreign -> String
+foreign import showForeign :: Foreign -> String
 
 foreign import undefined :: forall a. a
 
@@ -40,9 +30,4 @@ unsafeShowPrintId o = unsafePerformEff $ do
 -- | Run an effectful computation maintaining the type signature.
 --   This can be helpful when passing callbacks to FFI functions,
 --   but comes with obvious big scary risks.
-foreign import unsafeEvalEff """
-  function unsafeEvalEff(f) {
-    f();
-    return f;
-  }
-""":: forall eff a. Eff eff a -> Eff eff a
+foreign import unsafeEvalEff :: forall eff a. Eff eff a -> Eff eff a

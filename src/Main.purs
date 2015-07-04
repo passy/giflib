@@ -67,7 +67,7 @@ instance eqLoadingStatus :: Eq LoadingStatus where
   (==) _ _                                = false
   (/=) a b                                = not (a == b)
 
-type State = { entries       :: [Entry]       -- ^ All entries matching the tag
+type State = { entries       :: Array Entry   -- ^ All entries matching the tag
              , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
              , newUrl        :: URL           -- ^ New URL to be submitted
              , newTags       :: Set.Set Tag   -- ^ New Tags to be submitted
@@ -81,7 +81,7 @@ data Action
   | LoadingAction LoadingStatus Action
   | UpdateNewURL URL
   | UpdateNewTags String
-  | UpdateEntries [Entry]
+  | UpdateEntries (Array Entry)
   | ShowError String
 
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
@@ -241,5 +241,5 @@ main = do
         Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries)
         Left  err     -> driver $ ShowError $ show err
 
-    decodeEntries :: JObject -> Either Foreign.ForeignError [Entry]
+    decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
     decodeEntries = bimap Foreign.JSONError id <<< decodeJson <<< fromObject
