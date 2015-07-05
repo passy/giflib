@@ -27,8 +27,8 @@ main = runTest do
         assert "Result can be encoded back and forth" $
             validEntriesRecord == (fromRight entries)
 
-decodeEntries :: String -> Either String [Entry]
+decodeEntries :: String -> Either String (Array Entry)
 decodeEntries v = jsonParser v >>= decodeJson
 
-encodeEntries :: [Entry] -> String
+encodeEntries :: Array Entry -> String
 encodeEntries = show <<< encodeEntriesObject

@@ -54,7 +54,7 @@ invalidEntriesJson = """{
 }
 """
 
-validEntriesRecord :: [Entry]
+validEntriesRecord :: Array Entry
 validEntriesRecord = Entry <$>
                 [ { id: uuid "-JnknoQihfbdX5VZA9Z_"
                   , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
