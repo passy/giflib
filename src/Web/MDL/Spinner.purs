@@ -1,5 +1,6 @@
 module MDL.Spinner where
 
+import Prelude
 import Data.Monoid (mempty)
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A

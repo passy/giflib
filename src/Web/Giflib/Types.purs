@@ -1,11 +1,11 @@
 module Web.Giflib.Types where
 
+import Prelude
 import Data.Array (snoc)
 import Data.Either (Either(Left))
 import Halogen.HTML.Target (URL(), url, runURL)
-import Data.Argonaut (foldJsonObject)
 import Data.Argonaut.Combinators ((.?), (?>>=), (~>), (:=))
-import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject)
+import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject, foldJsonObject)
 import Data.Argonaut.Decode (DecodeJson, decodeJson)
 import Data.Argonaut.Encode (EncodeJson)
 import Data.Foldable (foldl)

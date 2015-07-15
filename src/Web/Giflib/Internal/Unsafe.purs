@@ -6,9 +6,10 @@ module Web.Giflib.Internal.Unsafe
   , undefined
   ) where
 
+import Prelude
 import Control.Monad.Eff (Eff())
 import Data.Foreign (Foreign(), toForeign)
-import Debug.Trace (trace)
+import Control.Monad.Eff.Console (log)
 
 
 foreign import unsafePerformEff :: forall a eff. Eff eff a -> a
@@ -19,12 +20,12 @@ foreign import undefined :: forall a. a
 
 unsafePrintId :: forall a. a -> a
 unsafePrintId o = unsafePerformEff $ do
-  trace <<< showForeign <<< toForeign $ o
+  log <<< showForeign <<< toForeign $ o
   return o
 
 unsafeShowPrintId :: forall a. (Show a) => a -> a
 unsafeShowPrintId o = unsafePerformEff $ do
-  trace <<< show $ o
+  log <<< show $ o
   return o
 
 -- | Run an effectful computation maintaining the type signature.

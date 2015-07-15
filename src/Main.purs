@@ -1,10 +1,12 @@
 module Main where
 
+import Prelude
 import Control.Alternative
 import Control.Functor (($>))
 import Control.Monad.Trans (lift)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Console (log)
 import Control.Monad.Eff.Exception (error, throwException, Exception(..))
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
@@ -25,7 +27,6 @@ import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (Trace(), trace)
 import Halogen (runUI, Driver(), HalogenEffects())
 import Halogen.Component (Component(..))
 import Halogen.HTML.Target (URL(), url, runURL)
@@ -217,7 +218,7 @@ processTagInput = trim >>> split " " >>> Set.fromList
 
 -- Application Main
 main = do
-  trace "Booting. Beep. Boop."
+  log "Booting. Beep. Boop."
   fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
   let conf = AppConfig { firebase: fb }
 
@@ -231,7 +232,7 @@ main = do
   case el of
     Just e -> appendChild e node
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
-  trace "Up and running."
+  log "Up and running."
 
   where
     -- TODO: Use Aff instead of Eff for this.

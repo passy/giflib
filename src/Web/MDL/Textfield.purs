@@ -1,5 +1,6 @@
 module MDL.Textfield where
 
+import Prelude
 import Data.Monoid
 import Data.Maybe
 import MDL.Internal (mip)

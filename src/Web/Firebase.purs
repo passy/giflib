@@ -8,6 +8,7 @@ module Web.Firebase
 )
 where
 
+import Prelude
 import Control.Monad.Eff (Eff())
 import Data.Foreign (Foreign(), toForeign)
 import Data.Function (Fn1(), Fn2(), Fn3(), Fn4(), runFn1, runFn2, runFn3, runFn4)

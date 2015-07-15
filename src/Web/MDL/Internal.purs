@@ -1,5 +1,6 @@
 module MDL.Internal where
 
+import Prelude
 import Data.Maybe
 import Data.Monoid
 

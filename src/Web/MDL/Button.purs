@@ -1,5 +1,6 @@
 module MDL.Button where
 
+import Prelude
 import Data.Maybe
 import Data.Monoid
 import MDL.Internal (mip)

@@ -10,6 +10,7 @@ module MDL
   )
 where
 
+import Prelude
 import Halogen.HTML.Attributes (ClassName(), className)
 
 card :: ClassName
