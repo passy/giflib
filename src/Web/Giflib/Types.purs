@@ -13,6 +13,7 @@ import Web.Giflib.Internal.Unsafe (undefined)
 
 import qualified Data.Date as Date
 import qualified Data.Set as Set
+import qualified Data.List as List
 import qualified Data.StrMap as StrMap
 import qualified Data.Time as Time
 
@@ -25,11 +26,10 @@ newtype Entry = Entry { id :: UUID
                       }
 
 instance eqEntry :: Eq Entry where
-  (==) (Entry a) (Entry b) = a.id == b.id &&
-                             a.url == b.url &&
-                             a.tags == b.tags &&
-                             a.date == b.date
-  (/=) a         b         = not (a == b)
+  eq (Entry a) (Entry b) = a.id == b.id &&
+                           a.url == b.url &&
+                           a.tags == b.tags &&
+                           a.date == b.date
 
 instance showEntry :: Show Entry where
   show (Entry a) = "Entry { id: " ++ show a.id
@@ -41,8 +41,7 @@ instance showEntry :: Show Entry where
 newtype UUID = UUID String
 
 instance eqUUID :: Eq UUID where
-  (==) (UUID a) (UUID b) = a == b
-  (/=) a        b        = not (a == b)
+  eq (UUID a) (UUID b) = a == b
 
 instance showUUID :: Show UUID where
   show (UUID a) = "uuid " ++ show a
@@ -64,13 +63,13 @@ decodeEntries json =
     parse acc key json = do
       obj <- decodeJson json
       url' <- (obj .? "uri") :: Either String String
-      tstamp <- (obj .? "date") :: Either String Number
+      tstamp <- (obj .? "date") :: Either String Int
       tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 
       return $ snoc acc $ Entry { id: uuid key
                                 , url: url url'
-                                , tags: Set.fromList tags
+                                , tags: Set.fromList $ List.toList $ tags
                                 , date: date
                                 }
 
@@ -88,7 +87,7 @@ encodeEntryInner (Entry e) =  "uri"  := runURL e.url
                            ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
                            ~> jsonEmptyObject
   where
-    runMilliseconds :: Time.Milliseconds -> Number
+    runMilliseconds :: Time.Milliseconds -> Int
     runMilliseconds (Time.Milliseconds n) = n
 
 instance encodeJsonEntry :: EncodeJson Entry where
