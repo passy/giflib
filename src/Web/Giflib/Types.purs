@@ -1,21 +1,25 @@
 module Web.Giflib.Types where
 
 import Prelude
-import Data.Array (snoc)
-import Data.Either (Either(Left))
-import Halogen.HTML.Target (URL(), url, runURL)
 import Data.Argonaut.Combinators ((.?), (?>>=), (~>), (:=))
 import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject, foldJsonObject)
 import Data.Argonaut.Decode (DecodeJson, decodeJson)
 import Data.Argonaut.Encode (EncodeJson)
+import Data.Array (snoc)
+import Data.Either (Either(Left, Right))
 import Data.Foldable (foldl)
-import Web.Giflib.Internal.Unsafe (undefined)
+import Data.Maybe (maybe)
+import Halogen.HTML.Target (URL(), url, runURL)
+import Web.Giflib.Internal.Unsafe -- (undefined, unsafePrintId)
 
 import qualified Data.Date as Date
-import qualified Data.Set as Set
+import qualified Data.Int as Int
+import qualified Data.Int.Extra.Unsafe as Int
 import qualified Data.List as List
+import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
 import qualified Data.Time as Time
+import qualified Math as Math
 
 type Tag = String
 
@@ -63,7 +67,8 @@ decodeEntries json =
     parse acc key json = do
       obj <- decodeJson json
       url' <- (obj .? "uri") :: Either String String
-      tstamp <- (obj .? "date") :: Either String Int
+      tstampNum <- (obj .? "date") :: Either String Number
+      tstamp <- maybe (Left "Not an Int") Right (Int.unsafeFromNumber <<< Math.floor $ tstampNum)
       tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 

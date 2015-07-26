@@ -3,6 +3,7 @@ module Web.Giflib.Internal.Unsafe
   , unsafeShowPrintId
   , unsafePrintId
   , unsafeEvalEff
+  , unsafeLog
   , undefined
   ) where
 
@@ -13,6 +14,8 @@ import Control.Monad.Eff.Console (log)
 
 
 foreign import unsafePerformEff :: forall a eff. Eff eff a -> a
+
+foreign import unsafeLog :: forall a. a -> a
 
 foreign import showForeign :: Foreign -> String
 
@@ -27,6 +30,7 @@ unsafeShowPrintId :: forall a. (Show a) => a -> a
 unsafeShowPrintId o = unsafePerformEff $ do
   log <<< show $ o
   return o
+
 
 -- | Run an effectful computation maintaining the type signature.
 --   This can be helpful when passing callbacks to FFI functions,

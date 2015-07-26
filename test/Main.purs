@@ -12,11 +12,12 @@ import Web.Giflib.Types (Entry(..), encodeEntriesObject)
 import Control.Monad.Eff.Class
 import Test.Unit
 import Web.Giflib.Internal.Unsafe
+import Control.Monad.Eff.Console (print)
 
 main = runTest do
     test "decode a list of entries" do
         let result = decodeEntries validEntriesJson
-        assert "Result could be parsed" $ isRight result
+        assert "Result could be parsed" $ isRight (unsafePrintId result)
         assert "Decoded entry matches record" $ fromRight result == validEntriesRecord
 
     test "fails decoding invalid entries" do

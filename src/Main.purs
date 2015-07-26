@@ -1,7 +1,6 @@
 module Main where
 
 import Prelude
-import Control.Alternative
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log)
@@ -28,7 +27,6 @@ import Data.Functor (($>))
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
@@ -59,7 +57,6 @@ import qualified Web.Firebase.Types as FB
 import qualified Data.Foreign as Foreign
 
 import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID)
-import Web.Giflib.Internal.Unsafe (unsafePrintId, undefined, unsafeEvalEff)
 
 data LoadingStatus
  = Loading
@@ -185,7 +182,7 @@ ui conf = render <$> stateful emptyState update
         , A.key $ runUUID e.id
         ]
         [ H.div [ A.class_ MDL.cardImageContainer
-                , CSS.style $ backgroundImage $ (BackgroundImage $ fromString $ runURL e.url)
+                , CSS.style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ A.class_ MDL.cardHeading ]
             [ H.h2
@@ -199,6 +196,11 @@ ui conf = render <$> stateful emptyState update
                 , A.target "_blank" ] [ H.text $ runURL e.url ]
             ]
         ]
+
+    entryBackground :: forall e. { url :: URL | e } -> BackgroundImage
+    entryBackground e =
+      let url = "url(" <> runURL e.url <> ")"
+      in BackgroundImage $ fromString url
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =

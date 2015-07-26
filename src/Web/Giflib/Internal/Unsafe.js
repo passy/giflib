@@ -15,3 +15,8 @@ exports.unsafeEvalEff = function (f) {
     f();
     return f;
 };
+
+exports.unsafeLog = function (x) {
+    console.log(x);
+    return x;
+};
