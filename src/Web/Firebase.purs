@@ -8,6 +8,7 @@ module Web.Firebase
 )
 where
 
+import Prelude
 import Control.Monad.Eff (Eff())
 import Data.Foreign (Foreign(), toForeign)
 import Data.Function (Fn1(), Fn2(), Fn3(), Fn4(), runFn1, runFn2, runFn3, runFn4)
@@ -18,24 +19,12 @@ import Web.Firebase.Types (Firebase(), FirebaseEff(), FirebaseErr(), DataSnapsho
 import Web.Giflib.Internal.Unsafe (unsafeEvalEff)
 
 
-foreign import newFirebaseImpl """
-  function newFirebaseImpl(uri) {
-    return function () {
-      return new Firebase(uri);
-    }
-  }
-""" :: forall eff. Fn1 String (Eff (firebase :: FirebaseEff | eff) Firebase)
+foreign import newFirebaseImpl :: forall eff. Fn1 String (Eff (firebase :: FirebaseEff | eff) Firebase)
 
 newFirebase :: forall eff. URL -> Eff (firebase :: FirebaseEff | eff) Firebase
 newFirebase u = runFn1 newFirebaseImpl $ runURL u
 
-foreign import childImpl """
-  function childImpl(childPath, firebase) {
-    return function () {
-      return firebase.child(childPath);
-    };
-  }
-""" :: forall eff. Fn2 String Firebase (Eff (firebase :: FirebaseEff | eff) Firebase)
+foreign import childImpl :: forall eff. Fn2 String Firebase (Eff (firebase :: FirebaseEff | eff) Firebase)
 
 child :: forall eff. String -> Firebase -> Eff (firebase :: FirebaseEff | eff) Firebase
 child = runFn2 childImpl
@@ -54,13 +43,7 @@ showEventType t = case t of
                        ChildRemoved -> "child_removed"
                        ChildMoved -> "child_moved"
 
-foreign import onImpl """
-  function onImpl(eventType, callback, cancelCallback, fb) {
-    return function () {
-      return fb.on(eventType, callback, cancelCallback);
-    }
-  }
-""" :: forall eff. Fn4
+foreign import onImpl :: forall eff. Fn4
                    String
                    (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit)
                    (Nullable (FirebaseErr -> Eff eff Unit))
@@ -75,13 +58,7 @@ on :: forall eff.
       Eff (firebase :: FirebaseEff | eff) Unit
 on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (toNullable cb) fb
 
-foreign import setImpl """
-  function setImpl(value, onComplete, fb) {
-    return function () {
-      fb.set(value, onComplete === null ? undefined : onComplete);
-    };
-  }
-""" :: forall eff. Fn3
+foreign import setImpl :: forall eff. Fn3
                    Foreign
                    (Nullable (Nullable (FirebaseErr -> Eff eff Unit)))
                    Firebase
@@ -94,13 +71,7 @@ set :: forall eff.
        Eff (firebase :: FirebaseEff | eff) Unit
 set value cb fb = runFn3 setImpl value (toNullable (toNullable <$> cb)) fb
 
-foreign import pushImpl """
-  function pushImpl(value, onComplete, fb) {
-    return function () {
-      fb.push(value, onComplete === null ? undefined : onComplete);
-    };
-  }
-""" :: forall eff. Fn3
+foreign import pushImpl :: forall eff. Fn3
                    Foreign
                    (Nullable (Nullable (FirebaseErr -> Eff eff Unit)))
                    Firebase

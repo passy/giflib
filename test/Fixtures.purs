@@ -1,12 +1,15 @@
 module Test.Fixtures where
 
+import Prelude
 import Web.Giflib.Types (Entry(..), uuid)
 import Halogen.HTML.Target (url)
 import Data.Maybe.Unsafe (fromJust)
+import Data.Foldable (Foldable)
 
 import qualified Data.Date as Date
 import qualified Data.Time as Time
 import qualified Data.Set as Set
+import qualified Data.List as List
 
 validEntriesJson :: String
 validEntriesJson = """{
@@ -54,18 +57,21 @@ invalidEntriesJson = """{
 }
 """
 
-validEntriesRecord :: [Entry]
+mkSet :: forall f a. (Foldable f, Ord a) => f a -> Set.Set a
+mkSet = List.toList >>> Set.fromList
+
+validEntriesRecord :: Array Entry
 validEntriesRecord = Entry <$>
                 [ { id: uuid "-JnknoQihfbdX5VZA9Z_"
                   , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
-                  , tags: Set.fromList [ "animal", "hamster", "party", "test" ]
+                  , tags: mkSet [ "animal", "hamster", "party", "test" ]
                   , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969259654)) }
                 , { id: uuid "-Jnknr0LLiYo2pqbO9D-"
                   , url: url "http://media.giphy.com/media/cbG9wtoO8QScw/giphy.gif"
-                  , tags: Set.fromList [ "excited", "ooh" ]
+                  , tags: mkSet [ "excited", "ooh" ]
                   , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969270254)) }
                 , { id: uuid "-JnkntKgOTda5_FbgTWs"
                   , url: url "http://media.giphy.com/media/12XMGIWtrHBl5e/giphy.gif"
-                  , tags: Set.fromList [ "michael", "no" ]
+                  , tags: mkSet [ "michael", "no" ]
                   , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969279748)) }
                 ]

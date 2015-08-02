@@ -10,6 +10,7 @@ module MDL
   )
 where
 
+import Prelude
 import Halogen.HTML.Attributes (ClassName(), className)
 
 card :: ClassName
@@ -33,5 +34,5 @@ cardBottom = className "mdl-card--bottom"
 cardUri :: ClassName
 cardUri = className "mdl-card--uri"
 
-shadow :: Number -> ClassName
+shadow :: Int -> ClassName
 shadow z = className $ "mdl-shadow--z" ++ (show z)

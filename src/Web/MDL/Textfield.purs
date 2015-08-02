@@ -1,5 +1,6 @@
 module MDL.Textfield where
 
+import Prelude
 import Data.Monoid
 import Data.Maybe
 import MDL.Internal (mip)
@@ -22,7 +23,7 @@ defaultTextfield = { type_: "text"
                    , value: mempty
                    }
 
-textfield :: forall i. [A.Attr i] -> Textfield -> H.HTML i
+textfield :: forall i. (Array (A.Attr i)) -> Textfield -> H.HTML i
 textfield attrs t =
   H.div [ A.classes mainClasses ]
     ([ H.input ([ A.class_ clsTextfieldInput
