@@ -14,7 +14,6 @@ import Web.Giflib.Internal.Unsafe -- (undefined, unsafePrintId)
 
 import qualified Data.Date as Date
 import qualified Data.Int as Int
-import qualified Data.Int.Extra.Unsafe as Int
 import qualified Data.List as List
 import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
@@ -67,8 +66,7 @@ decodeEntries json =
     parse acc key json = do
       obj <- decodeJson json
       url' <- (obj .? "uri") :: Either String String
-      tstampNum <- (obj .? "date") :: Either String Number
-      tstamp <- maybe (Left "Not an Int") Right (Int.unsafeFromNumber <<< Math.floor $ tstampNum)
+      tstamp <- (obj .? "date") :: Either String Number
       tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 
@@ -92,7 +90,7 @@ encodeEntryInner (Entry e) =  "uri"  := runURL e.url
                            ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
                            ~> jsonEmptyObject
   where
-    runMilliseconds :: Time.Milliseconds -> Int
+    runMilliseconds :: Time.Milliseconds -> Number
     runMilliseconds (Time.Milliseconds n) = n
 
 instance encodeJsonEntry :: EncodeJson Entry where

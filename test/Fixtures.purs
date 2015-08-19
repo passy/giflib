@@ -65,13 +65,13 @@ validEntriesRecord = Entry <$>
                 [ { id: uuid "-JnknoQihfbdX5VZA9Z_"
                   , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                   , tags: mkSet [ "animal", "hamster", "party", "test" ]
-                  , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969259654)) }
+                  , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969259654.0)) }
                 , { id: uuid "-Jnknr0LLiYo2pqbO9D-"
                   , url: url "http://media.giphy.com/media/cbG9wtoO8QScw/giphy.gif"
                   , tags: mkSet [ "excited", "ooh" ]
-                  , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969270254)) }
+                  , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969270254.0)) }
                 , { id: uuid "-JnkntKgOTda5_FbgTWs"
                   , url: url "http://media.giphy.com/media/12XMGIWtrHBl5e/giphy.gif"
                   , tags: mkSet [ "michael", "no" ]
-                  , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969279748)) }
+                  , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969279748.0)) }
                 ]
