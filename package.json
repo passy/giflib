@@ -6,7 +6,7 @@
   "scripts": {
     "test": "pulp test && gulp build",
     "build": "gulp build",
-    "serve": "http-server dist/",
+    "start": "http-server dist/",
     "watch": "gulp watch"
   },
   "repository": {
@@ -29,7 +29,7 @@
     "mkdirp": "^0.5.0",
     "node-uuid": "^1.4.3",
     "pulp": "^4.0.2",
-    "purescript": "^0.7.1",
+    "purescript": "0.7.3-fixed",
     "virtual-dom": "^2.0.1"
   }
 }
