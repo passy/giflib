@@ -6,7 +6,8 @@ import Data.Maybe
 import MDL.Internal (mip)
 
 import qualified Halogen.HTML as H
-import qualified Halogen.HTML.Attributes as A
+import qualified Halogen.HTML.Core as H
+import qualified Halogen.HTML.Properties as A
 
 type Textfield = { type_         :: String
                  , id            :: Maybe String
@@ -23,7 +24,7 @@ defaultTextfield = { type_: "text"
                    , value: mempty
                    }
 
-textfield :: forall i. (Array (A.Attr i)) -> Textfield -> H.HTML i
+textfield :: forall i. (Array (H.Prop i)) -> Textfield -> H.HTML i
 textfield attrs t =
   H.div [ A.classes mainClasses ]
     ([ H.input ([ A.class_ clsTextfieldInput
@@ -32,11 +33,11 @@ textfield attrs t =
      ] <> (mip (\lbl ->
        H.label ([ A.class_ clsLabel ] <> (mip A.for t.id)) [ H.text lbl ]) t.label)
     )
-  where clsTextfield         = A.className "mdl-textfield"
-        clsJsTextfield       = A.className "mdl-js-textfield"
-        clsFloatingTextfield = A.className "mdl-textfield--floating-label"
-        clsTextfieldInput    = A.className "mdl-textfield__input"
-        clsLabel             = A.className "mdl-textfield__label"
+  where clsTextfield         = H.className "mdl-textfield"
+        clsJsTextfield       = H.className "mdl-js-textfield"
+        clsFloatingTextfield = H.className "mdl-textfield--floating-label"
+        clsTextfieldInput    = H.className "mdl-textfield__input"
+        clsLabel             = H.className "mdl-textfield__label"
         mainClasses =
           [ clsTextfield, clsJsTextfield ] ++
             if t.floatingLabel then [ clsFloatingTextfield ] else []

@@ -14,15 +14,16 @@ import Data.Foreign (Foreign(), toForeign)
 import Data.Function (Fn1(), Fn2(), Fn3(), Fn4(), runFn1, runFn2, runFn3, runFn4)
 import Data.Maybe (Maybe())
 import Data.Nullable (toNullable, Nullable())
-import Halogen.HTML.Target (URL(), runURL)
+import Data.URI (printURI)
+import Data.URI.Types (URI())
 import Web.Firebase.Types (Firebase(), FirebaseEff(), FirebaseErr(), DataSnapshot())
 import Web.Giflib.Internal.Unsafe (unsafeEvalEff)
 
 
 foreign import newFirebaseImpl :: forall eff. Fn1 String (Eff (firebase :: FirebaseEff | eff) Firebase)
 
-newFirebase :: forall eff. URL -> Eff (firebase :: FirebaseEff | eff) Firebase
-newFirebase u = runFn1 newFirebaseImpl $ runURL u
+newFirebase :: forall eff. URI -> Eff (firebase :: FirebaseEff | eff) Firebase
+newFirebase u = runFn1 newFirebaseImpl $ printURI u
 
 foreign import childImpl :: forall eff. Fn2 String Firebase (Eff (firebase :: FirebaseEff | eff) Firebase)
 

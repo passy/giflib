@@ -9,7 +9,8 @@ import Data.Array (snoc)
 import Data.Either (Either(Left, Right))
 import Data.Foldable (foldl)
 import Data.Maybe (maybe)
-import Halogen.HTML.Target (URL(), url, runURL)
+import Data.URI (printURI, parseURI, runParseURI)
+import Data.URI.Types (URI())
 import Web.Giflib.Internal.Unsafe -- (undefined, unsafePrintId)
 
 import qualified Data.Date as Date
@@ -23,20 +24,20 @@ import qualified Math as Math
 type Tag = String
 
 newtype Entry = Entry { id :: UUID
-                      , url :: URL
+                      , uri :: URI
                       , tags :: Set.Set Tag
                       , date :: Date.Date
                       }
 
 instance eqEntry :: Eq Entry where
   eq (Entry a) (Entry b) = a.id == b.id &&
-                           a.url == b.url &&
+                           a.uri == b.uri &&
                            a.tags == b.tags &&
                            a.date == b.date
 
 instance showEntry :: Show Entry where
   show (Entry a) = "Entry { id: " ++ show a.id
-                      ++ ", url: " ++ show a.url
+                      ++ ", uri: " ++ show a.uri
                       ++ ", tags: " ++ show a.tags
                       ++ ", date: " ++ show a.date
                       ++ "}"
@@ -65,13 +66,14 @@ decodeEntries json =
     parse :: (Array Entry) -> String -> Json -> Either String (Array Entry)
     parse acc key json = do
       obj <- decodeJson json
-      url' <- (obj .? "uri") :: Either String String
+      uri <- (obj .? "uri") :: Either String String
+      uri' <- runParseURI $ parseURI uri
       tstamp <- (obj .? "date") :: Either String Number
       tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 
       return $ snoc acc $ Entry { id: uuid key
-                                , url: url url'
+                                , uri: uri'
                                 , tags: Set.fromList $ List.toList $ tags
                                 , date: date
                                 }
@@ -85,7 +87,7 @@ encodeEntry acc ex@(Entry e)
   ~> acc
 
 encodeEntryInner :: Entry -> Json
-encodeEntryInner (Entry e) =  "uri"  := runURL e.url
+encodeEntryInner (Entry e) =  "uri"  := printURI e.url
                            ~> "tags" := Set.toList e.tags
                            ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
                            ~> jsonEmptyObject

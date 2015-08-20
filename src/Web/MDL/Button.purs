@@ -6,7 +6,8 @@ import Data.Monoid
 import MDL.Internal (mip)
 
 import qualified Halogen.HTML as H
-import qualified Halogen.HTML.Attributes as A
+import qualified Halogen.HTML.Core as H
+import qualified Halogen.HTML.Properties as A
 
 data ButtonElevation = ButtonRaised | ButtonFlat
 
@@ -27,7 +28,7 @@ button :: forall i. Button -> H.HTML i
 button t =
   H.button ([ A.classes btnClasses ] <> (mip A.id_ t.id))
            [ H.text t.text ]
-  where btnClasses = A.className <$> ([ "mdl-button"
+  where btnClasses = H.className <$> ([ "mdl-button"
                                       , "mdl-js-button"
                                       ] <> btnRaisedClass
                                         <> btnRippleClass)

@@ -11,7 +11,7 @@ module MDL
 where
 
 import Prelude
-import Halogen.HTML.Attributes (ClassName(), className)
+import Halogen.HTML.Core (ClassName(), className)
 
 card :: ClassName
 card = className "mdl-card"

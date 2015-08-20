@@ -17,10 +17,8 @@ import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Array (concat, (!!))
 import Data.Bifunctor (bimap)
-import Data.DOM.Simple.Document ()
-import Data.DOM.Simple.Element (querySelector, appendChild)
-import Data.DOM.Simple.Window (document, globalWindow)
 import Data.Either (Either(Left, Right))
+import Data.Either.Unsafe (fromRight)
 import Data.Enum (fromEnum)
 import Data.Foldable (intercalate)
 import Data.Functor (($>))
@@ -28,24 +26,26 @@ import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (mempty)
+import Data.Nullable (toMaybe)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
-import Halogen (runUI, Driver(), HalogenEffects())
+import Data.URI (runParseURI, parseURI)
+import Data.URI.Types (URI())
+import Halogen (runUI, Driver())
 import Halogen.Component (Component(..))
-import Halogen.HTML.Target (URL(), url, runURL)
-import Halogen.Signal (SF1(..), stateful)
+import Halogen.Effects (HalogenEffects())
+
 import qualified Data.Date as Date
 import qualified Data.Date.UTC as Date
 import qualified Data.Set as Set
 import qualified Data.List as List
 import qualified Data.StrMap as StrMap
 import qualified Halogen.HTML as H
-import qualified Halogen.HTML.Attributes as A
+import qualified Halogen.HTML.Properties as A
 import qualified Halogen.HTML.Events as A
 import qualified Halogen.HTML.Events.Forms as E
 import qualified Halogen.HTML.Events.Handler as E
-import qualified Halogen.HTML.Events.Monad as E
-import qualified Halogen.HTML.CSS as CSS
+import qualified Halogen.HTML.Elements as El
 import qualified MDL as MDL
 import qualified MDL.Button as MDL
 import qualified MDL.Textfield as MDL
@@ -55,6 +55,11 @@ import qualified Web.Firebase as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 import qualified Data.Foreign as Foreign
+
+import qualified DOM.Node.ParentNode as DOM
+import qualified DOM.Node.Node as DOM
+import qualified DOM.HTML as DOM
+import qualified DOM.HTML.Types as DOM
 
 import Web.Giflib.Internal.Unsafe
 
@@ -73,7 +78,7 @@ instance eqLoadingStatus :: Eq LoadingStatus where
 
 type State = { entries       :: Array Entry   -- ^ All entries matching the tag
              , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
-             , newUrl        :: URL           -- ^ New URL to be submitted
+             , newUrl        :: URI           -- ^ New URI to be submitted
              , newTags       :: Set.Set Tag   -- ^ New Tags to be submitted
              , error         :: String        -- ^ Global UI error to be shown
              , loadingStatus :: LoadingStatus -- ^ List loading state
@@ -83,7 +88,7 @@ data Action
   = NoOp
   | ResetNewForm
   | LoadingAction LoadingStatus Action
-  | UpdateNewURL URL
+  | UpdateNewURI URI
   | UpdateNewTags String
   | UpdateEntries (Array Entry)
   | ShowError String
@@ -102,7 +107,7 @@ type AppEff eff = HalogenEffects ( uuid :: NUUID.UUIDEff
 emptyState :: State
 emptyState = { entries: mempty
              , tag: mempty
-             -- TODO: Add a Monoid instance to URL
+             -- TODO: Add a Monoid instance to URI
              , newUrl: url mempty
              , newTags: Set.empty
              , error: mempty
@@ -119,7 +124,7 @@ update s' a = updateState a s'
                                         , newTags = (Set.empty :: Set.Set Tag)
                                         }
   updateState (LoadingAction l a) s = updateState a $ s { loadingStatus = l }
-  updateState (UpdateNewURL e) s    = s { newUrl  = unsafeShowPrintId $ e }
+  updateState (UpdateNewURI e) s    = s { newUrl  = unsafeShowPrintId $ e }
   updateState (UpdateNewTags e) s   = s { newTags = processTagInput e }
   updateState (UpdateEntries e) s   = s { entries = e }
   updateState (ShowError e) s       = s { error   = e }
@@ -154,7 +159,7 @@ ui conf = render <$> stateful emptyState update
                , A.class_ $ A.className "gla-layout--margin-h"
                ]
                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [
-                 MDL.textfield [ E.onInput (A.input UpdateNewURL <<< url)
+                 MDL.textfield [ E.onInput (A.input UpdateNewURI <<< url)
                                , A.required true ] $
                   MDL.defaultTextfield { id = Just "inp-new-gif"
                                        , label = Just "URL"
@@ -184,7 +189,7 @@ ui conf = render <$> stateful emptyState update
         , A.key $ runUUID e.id
         ]
         [ H.div [ A.class_ MDL.cardImageContainer
-                , CSS.style $ backgroundImage $ entryBackground e
+                , El.style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ A.class_ MDL.cardHeading ]
             [ H.h2
@@ -193,15 +198,15 @@ ui conf = render <$> stateful emptyState update
         , H.div [ A.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ]
         , H.div [ A.class_ MDL.cardBottom ]
             [ H.a
-                [ A.href $ runURL e.url
+                [ A.href $ printURI e.uri
                 , A.class_ MDL.cardUri
-                , A.target "_blank" ] [ H.text $ runURL e.url ]
+                , A.target "_blank" ] [ H.text $ printURI e.uri ]
             ]
         ]
 
-    entryBackground :: forall e. { url :: URL | e } -> BackgroundImage
+    entryBackground :: forall e. { uri :: URI | e } -> BackgroundImage
     entryBackground e =
-      let url = "url(" <> runURL e.url <> ")"
+      let url = "url(" <> printURI e.url <> ")"
       in BackgroundImage $ fromString url
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
@@ -224,7 +229,8 @@ processTagInput = trim >>> split " " >>> List.toList >>> Set.fromList
 -- Application Main
 main = do
   log "Booting. Beep. Boop."
-  fb <- FB.newFirebase $ url "https://giflib-web.firebaseio.com/"
+  let fbUri = fromRight $ runParseURI $ parseURI "https://giflib-web.firebaseio.com/"
+  fb <- FB.newFirebase fbUri
   let conf = AppConfig { firebase: fb }
 
   Tuple node driver <- runUI $ ui conf
@@ -232,11 +238,12 @@ main = do
   children <- FB.child "entries" fb
   FB.on FB.Value (dscb driver) Nothing children
 
-  doc <- document globalWindow
-  el <- querySelector "#app-main" doc
-  case el of
-    Just e -> appendChild e node
+  win <- DOM.window
+  el <- querySelector "#app-main" win
+  case (toMaybe el) of
+    Just e -> appendChild (DOM.htmlElementToNode e) node
     Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?"
+
   log "Up and running."
 
   where
