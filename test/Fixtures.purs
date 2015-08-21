@@ -1,10 +1,13 @@
 module Test.Fixtures where
 
 import Prelude
-import Web.Giflib.Types (Entry(..), uuid)
-import Halogen.HTML.Target (url)
-import Data.Maybe.Unsafe (fromJust)
+
+import Data.Either.Unsafe (fromRight)
 import Data.Foldable (Foldable)
+import Data.Maybe.Unsafe (fromJust)
+import Data.URI (runParseURI)
+import Data.URI.Types (URI())
+import Web.Giflib.Types (Entry(..), uuid)
 
 import qualified Data.Date as Date
 import qualified Data.Time as Time
@@ -60,18 +63,21 @@ invalidEntriesJson = """{
 mkSet :: forall f a. (Foldable f, Ord a) => f a -> Set.Set a
 mkSet = List.toList >>> Set.fromList
 
+uri :: String -> URI
+uri = fromRight <<< runParseURI
+
 validEntriesRecord :: Array Entry
 validEntriesRecord = Entry <$>
                 [ { id: uuid "-JnknoQihfbdX5VZA9Z_"
-                  , url: url "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
+                  , uri: uri "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                   , tags: mkSet [ "animal", "hamster", "party", "test" ]
                   , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969259654.0)) }
                 , { id: uuid "-Jnknr0LLiYo2pqbO9D-"
-                  , url: url "http://media.giphy.com/media/cbG9wtoO8QScw/giphy.gif"
+                  , uri: uri "http://media.giphy.com/media/cbG9wtoO8QScw/giphy.gif"
                   , tags: mkSet [ "excited", "ooh" ]
                   , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969270254.0)) }
                 , { id: uuid "-JnkntKgOTda5_FbgTWs"
-                  , url: url "http://media.giphy.com/media/12XMGIWtrHBl5e/giphy.gif"
+                  , uri: uri "http://media.giphy.com/media/12XMGIWtrHBl5e/giphy.gif"
                   , tags: mkSet [ "michael", "no" ]
                   , date: fromJust (Date.fromEpochMilliseconds (Time.Milliseconds 1429969279748.0)) }
                 ]
