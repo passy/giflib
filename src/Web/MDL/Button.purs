@@ -24,7 +24,7 @@ defaultButton = { elevation: ButtonFlat
                 , text: mempty
                 }
 
-button :: forall i. Button -> H.HTML i
+button :: forall p i. Button -> H.HTML p i
 button t =
   H.button ([ A.classes btnClasses ] <> (mip A.id_ t.id))
            [ H.text t.text ]

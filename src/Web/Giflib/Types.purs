@@ -6,11 +6,13 @@ import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject, f
 import Data.Argonaut.Decode (DecodeJson, decodeJson)
 import Data.Argonaut.Encode (EncodeJson)
 import Data.Array (snoc)
+import Data.Bifunctor (bimap)
 import Data.Either (Either(Left, Right))
 import Data.Foldable (foldl)
 import Data.Maybe (maybe)
 import Data.URI (printURI, parseURI, runParseURI)
 import Data.URI.Types (URI())
+
 import Web.Giflib.Internal.Unsafe -- (undefined, unsafePrintId)
 
 import qualified Data.Date as Date
@@ -67,7 +69,7 @@ decodeEntries json =
     parse acc key json = do
       obj <- decodeJson json
       uri <- (obj .? "uri") :: Either String String
-      uri' <- runParseURI $ parseURI uri
+      uri' <- bimap (show) id $ runParseURI uri
       tstamp <- (obj .? "date") :: Either String Number
       tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
@@ -87,7 +89,7 @@ encodeEntry acc ex@(Entry e)
   ~> acc
 
 encodeEntryInner :: Entry -> Json
-encodeEntryInner (Entry e) =  "uri"  := printURI e.url
+encodeEntryInner (Entry e) =  "uri"  := printURI e.uri
                            ~> "tags" := Set.toList e.tags
                            ~> "date" := (runMilliseconds $ Date.toEpochMilliseconds e.date)
                            ~> jsonEmptyObject
