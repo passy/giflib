@@ -85,8 +85,8 @@ decodeEntries json =
                                   , date: date
                                   }
 
-encodeEntriesObject :: (Array Entry) -> Json
-encodeEntriesObject = foldl encodeEntry jsonEmptyObject
+encodeEntriesObject :: EntryList -> Json
+encodeEntriesObject = runEntryList >>> foldl encodeEntry jsonEmptyObject
 
 encodeEntry :: Json -> Entry -> Json
 encodeEntry acc ex@(Entry e)

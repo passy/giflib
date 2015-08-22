@@ -7,7 +7,7 @@ import Data.Foldable (Foldable)
 import Data.Maybe.Unsafe (fromJust)
 import Data.URI (runParseURI)
 import Data.URI.Types (URI())
-import Web.Giflib.Types (Entry(..), uuid)
+import Web.Giflib.Types (EntryList(..), Entry(..), uuid)
 
 import qualified Data.Date as Date
 import qualified Data.Time as Time
@@ -66,8 +66,8 @@ mkSet = List.toList >>> Set.fromList
 uri :: String -> URI
 uri = fromRight <<< runParseURI
 
-validEntriesRecord :: Array Entry
-validEntriesRecord = Entry <$>
+validEntriesRecord :: EntryList
+validEntriesRecord = EntryList $ Entry <$>
                 [ { id: uuid "-JnknoQihfbdX5VZA9Z_"
                   , uri: uri "http://media.giphy.com/media/JdCz7YXOZAURq/giphy.gif"
                   , tags: mkSet [ "animal", "hamster", "party", "test" ]
