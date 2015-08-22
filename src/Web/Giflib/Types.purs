@@ -6,8 +6,8 @@ import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject, f
 import Data.Argonaut.Decode (DecodeJson, decodeJson)
 import Data.Argonaut.Encode (EncodeJson)
 import Data.Array (snoc)
-import Data.Bifunctor (bimap)
-import Data.Either (Either(Left, Right))
+import Data.Bifunctor (lmap)
+import Data.Either (Either(Left))
 import Data.Foldable (foldl)
 import Data.Maybe (maybe)
 import Data.URI (printURI, parseURI, runParseURI)
@@ -58,34 +58,39 @@ uuid = UUID
 runUUID :: UUID -> String
 runUUID (UUID s) = s
 
-instance decodeJsonEntries :: DecodeJson (Array Entry) where
+newtype EntryList = EntryList (Array Entry)
+
+runEntryList :: EntryList -> Array Entry
+runEntryList (EntryList e) = e
+
+instance decodeJsonEntries :: DecodeJson EntryList where
   decodeJson = foldJsonObject (Left "Top-level entries not an object") decodeEntries
 
-decodeEntries :: StrMap.StrMap Json -> Either String (Array Entry)
+decodeEntries :: StrMap.StrMap Json -> Either String EntryList
 decodeEntries json =
-  StrMap.foldM parse [] json
+  EntryList <$> StrMap.foldM parse [] json
   where
     parse :: (Array Entry) -> String -> Json -> Either String (Array Entry)
     parse acc key json = do
       obj <- decodeJson json
       uri <- (obj .? "uri") :: Either String String
-      uri' <- bimap (show) id $ runParseURI uri
+      uri' <- lmap show $ runParseURI uri
       tstamp <- (obj .? "date") :: Either String Number
       tags <- (obj .? "tags") :: Either String (Array Tag)
       date <- (Date.fromEpochMilliseconds <<< Time.Milliseconds $ tstamp) ?>>= "date"
 
-      return $ snoc acc $ Entry { id: uuid key
-                                , uri: uri'
-                                , tags: Set.fromList $ List.toList $ tags
-                                , date: date
-                                }
+      return <<< snoc acc $ Entry { id: uuid key
+                                  , uri: uri'
+                                  , tags: Set.fromList $ List.toList $ tags
+                                  , date: date
+                                  }
 
 encodeEntriesObject :: (Array Entry) -> Json
 encodeEntriesObject = foldl encodeEntry jsonEmptyObject
 
 encodeEntry :: Json -> Entry -> Json
 encodeEntry acc ex@(Entry e)
-  =  (runUUID e.id) := ( encodeEntryInner ex )
+  =  (runUUID e.id) := (encodeEntryInner ex)
   ~> acc
 
 encodeEntryInner :: Entry -> Json

@@ -16,7 +16,7 @@ import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Array (concat, (!!))
-import Data.Bifunctor (bimap)
+import Data.Bifunctor (lmap, rmap)
 import Data.Either (Either(Left, Right), either)
 import Data.Either.Unsafe (fromRight)
 import Data.Enum (fromEnum)
@@ -64,7 +64,7 @@ import qualified DOM.HTML.Types as DOM
 
 import Web.Giflib.Internal.Unsafe
 
-import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID)
+import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
 
 data LoadingStatus
  = Loading
@@ -255,4 +255,4 @@ main = do
         Left  err     -> driver $ ShowError $ show err
 
     decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
-    decodeEntries = bimap Foreign.JSONError id <<< decodeJson <<< fromObject
+    decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject
