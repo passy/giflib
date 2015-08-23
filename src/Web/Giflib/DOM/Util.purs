@@ -15,14 +15,20 @@ import Control.Monad.Eff (Eff())
 import Data.Maybe (Maybe(..))
 import Data.Nullable (toMaybe)
 
--- | Appends the given node under the global querySelector value. If the query resolves
+-- This probably shouldn't be in this module.
+-- Inspired by @jbetzend
+-- https://twitter.com/jbetzend/status/635446351753543680
+(<$$>) :: forall f g a b. (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
+(<$$>) = map <<< map
+
+-- | Appends the given element under the global querySelector value. If the query resolves
 --   to an element in the DOM, the appended node will be returned, otherwise Nothing
 --   is returned.
-appendToQuerySelector :: forall eff. String -> DOM.Node -> Eff (dom :: DOM.DOM | eff) (Maybe DOM.Node)
+appendToQuerySelector :: forall eff. String -> DOM.HTMLElement -> Eff (dom :: DOM.DOM | eff) (Maybe DOM.Node)
 appendToQuerySelector selector node = do
   doc <- DOM.documentToParentNode <<< DOM.htmlDocumentToDocument <$> (DOM.document =<< DOM.window)
-  el <- (DOM.elementToNode `map`) <$> toMaybe <$> DOM.querySelector selector doc
+  el <- DOM.elementToNode <$$> toMaybe <$> DOM.querySelector selector doc
 
   case el of
-    Just el' -> Just <$> DOM.appendChild node el'
-    Nothing  -> pure $ Nothing
+    Just el' -> Just <$> DOM.appendChild (DOM.htmlElementToNode node) el'
+    Nothing  -> pure Nothing

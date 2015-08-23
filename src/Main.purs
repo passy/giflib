@@ -30,6 +30,7 @@ import qualified Web.Firebase as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 
+import Control.Monad.Aff (runAff)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log, CONSOLE())
@@ -60,6 +61,7 @@ import Data.URI.Types (URI())
 
 import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
+import Web.Giflib.DOM.Util (appendToQuerySelector)
 
 -- TODO: Be more specific, getting some weird compiler errors if I
 --       try to import HalogenEffects() though.
@@ -76,22 +78,22 @@ instance eqLoadingStatus :: Eq LoadingStatus where
   eq (LoadingError a) (LoadingError b)  = a == b
   eq _ _                                = false
 
-type State = { entries       :: Array Entry   -- ^ All entries matching the tag
-             , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
-             , newUrl        :: Maybe URI     -- ^ New URI to be submitted
-             , newTags       :: Set.Set Tag   -- ^ New Tags to be submitted
-             , error         :: String        -- ^ Global UI error to be shown
-             , loadingStatus :: LoadingStatus -- ^ List loading state
-             }
+newtype State = State { entries       :: Array Entry   -- ^ All entries matching the tag
+                      , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
+                      , newUrl        :: Maybe URI     -- ^ New URI to be submitted
+                      , newTags       :: Set.Set Tag   -- ^ New Tags to be submitted
+                      , error         :: String        -- ^ Global UI error to be shown
+                      , loadingStatus :: LoadingStatus -- ^ List loading state
+                      }
 
-data Action
-  = NoOp
-  | ResetNewForm
-  | LoadingAction LoadingStatus Action
-  | UpdateNewURI String
-  | UpdateNewTags String
-  | UpdateEntries (Array Entry)
-  | ShowError String
+data Input a
+  = NoOp a
+  | ResetNewForm a
+  | LoadingAction LoadingStatus a
+  | UpdateNewURI String a
+  | UpdateNewTags String a
+  | UpdateEntries (Array Entry) a
+  | ShowError String a
 
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
 
@@ -103,14 +105,14 @@ type AppEffects eff = HalogenEffects ( uuid :: NUUID.UUIDEff
 data Request
   = AddNewEntry State
 
-emptyState :: State
-emptyState = { entries: mempty
-             , tag: mempty
-             , newUrl: Nothing
-             , newTags: Set.empty
-             , error: mempty
-             , loadingStatus: Loading
-             }
+initialState :: State
+initialState = State { entries: mempty
+                     , tag: mempty
+                     , newUrl: Nothing
+                     , newTags: Set.empty
+                     , error: mempty
+                     , loadingStatus: Loading
+                     }
 
 {-- update :: State -> Action -> State --}
 {-- update s' a = updateState a s' --}
@@ -146,6 +148,15 @@ emptyState = { entries: mempty
 {--   children <- liftEff $ FB.child "entries" conf.firebase --}
 {--   liftEff $ FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children --}
 {--   E.yield ResetNewForm --}
+
+ui :: forall g p. (Functor g) => Component State Input g p
+ui = component render eval
+  where
+    render :: Render State Input p
+    render (State state) = H.div_ [ H.text "Hello World!" ]
+
+    eval :: Eval Input State Input g
+    eval (NoOp next) = return next
 
 {-- ui :: forall eff. AppConfig -> Component (E.Event (AppEff eff)) Action Action --}
 {-- ui conf = render <$> stateful emptyState update --}
@@ -225,34 +236,33 @@ processTagInput :: String -> Set.Set Tag
 processTagInput = trim >>> split " " >>> List.toList >>> Set.fromList
 
 -- Application Main
-main :: forall eff. Eff (AppEffects eff) Unit
-main = do
-  log "Booting. Beep. Boop."
+main :: Eff (AppEffects ()) Unit
+main = runAff throwException (const $ pure unit) $ do
+  liftEff $ log "Booting. Beep. Boop."
+
+  app <- runUI ui initialState
+  mainEl <- liftEff $ appendToQuerySelector "#app-main" app.node
+
+  case mainEl of
+    Just _ -> pure unit
+    Nothing -> liftEff <<< throwException $ error "Couldn't find #app-main. What've you done to my HTML?"
+
+  liftEff $ log "Up and running."
 
   -- This *should* break loudly.
-  let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
-  fb <- FB.newFirebase fbUri
-
-  let conf = AppConfig { firebase: fb }
-
-  {-- Tuple node driver <- runUI $ ui conf --}
-
-  children <- FB.child "entries" fb
+  {-- let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/" --}
+  {-- fb <- FB.newFirebase fbUri --}
+  {-- children <- FB.child "entries" fb --}
   {-- FB.on FB.Value (dscb driver) Nothing children --}
+  {-- let conf = AppConfig { firebase: fb } --}
 
-  {-- case (toMaybe el) of --}
-  {--   Just e -> DOM.appendChild (DOM.htmlElementToNode e) node --}
-  {--   Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?" --}
-
-  log "Up and running."
-
-  where
+  {-- where --}
     -- TODO: Use Aff instead of Eff for this.
-    dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff
-    dscb driver ds =
-      case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
-        Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries)
-        Left  err     -> driver $ ShowError $ show err
+    {-- dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff --}
+    {-- dscb driver ds = --}
+    {--   case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of --}
+    {--     Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries) --}
+    {--     Left  err     -> driver $ ShowError $ show err --}
 
-    decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
-    decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject
+    {-- decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry) --}
+    {-- decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject --}
