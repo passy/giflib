@@ -20,12 +20,9 @@ import Data.Nullable (toMaybe)
 --   is returned.
 appendToQuerySelector :: forall eff. String -> DOM.Node -> Eff (dom :: DOM.DOM | eff) (Maybe DOM.Node)
 appendToQuerySelector selector node = do
-  win <- DOM.window
-  hdoc <- DOM.document win
-  let doc = DOM.htmlDocumentToDocument hdoc
-  let pdoc = DOM.documentToParentNode doc
-  el <- toMaybe <$> DOM.querySelector selector pdoc
+  doc <- DOM.documentToParentNode <<< DOM.htmlDocumentToDocument <$> (DOM.document =<< DOM.window)
+  el <- (DOM.elementToNode `map`) <$> toMaybe <$> DOM.querySelector selector doc
 
   case el of
-    Just el' -> pure <$> DOM.appendChild node (DOM.elementToNode el')
-    Nothing  -> pure Nothing
+    Just el' -> Just <$> DOM.appendChild node el'
+    Nothing  -> pure $ Nothing
