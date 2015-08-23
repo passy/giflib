@@ -4,7 +4,9 @@ import Prelude
 
 import qualified DOM.HTML as DOM
 import qualified DOM.HTML.Types as DOM
+import qualified DOM.HTML.Window as DOM
 import qualified DOM.Node.Node as DOM
+import qualified DOM.Node.Types as DOM
 import qualified DOM.Node.ParentNode as DOM
 import qualified Data.Date as Date
 import qualified Data.Date.UTC as Date
@@ -51,7 +53,6 @@ import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (mempty)
-import Data.Nullable (toMaybe)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 import Data.URI (runParseURI, parseURI)
@@ -227,17 +228,18 @@ processTagInput = trim >>> split " " >>> List.toList >>> Set.fromList
 main :: forall eff. Eff (AppEffects eff) Unit
 main = do
   log "Booting. Beep. Boop."
+
+  -- This *should* break loudly.
   let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
   fb <- FB.newFirebase fbUri
+
   let conf = AppConfig { firebase: fb }
 
   {-- Tuple node driver <- runUI $ ui conf --}
 
-  {-- children <- FB.child "entries" fb --}
+  children <- FB.child "entries" fb
   {-- FB.on FB.Value (dscb driver) Nothing children --}
 
-  {-- win <- DOM.window --}
-  {-- el <- DOM.querySelector "#app-main" win --}
   {-- case (toMaybe el) of --}
   {--   Just e -> DOM.appendChild (DOM.htmlElementToNode e) node --}
   {--   Nothing -> throwException $ error "Couldn't find #app-main. What've you done to the HTML?" --}
