@@ -6,8 +6,8 @@ import qualified DOM.HTML as DOM
 import qualified DOM.HTML.Types as DOM
 import qualified DOM.HTML.Window as DOM
 import qualified DOM.Node.Node as DOM
-import qualified DOM.Node.Types as DOM
 import qualified DOM.Node.ParentNode as DOM
+import qualified DOM.Node.Types as DOM
 import qualified Data.Date as Date
 import qualified Data.Date.UTC as Date
 import qualified Data.Foreign as Foreign
@@ -15,12 +15,12 @@ import qualified Data.List as List
 import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
 import qualified Halogen.HTML as H
-import qualified Halogen.HTML.Elements as El
-import qualified Halogen.HTML.Events as A
+import qualified Halogen.HTML.Core as H
+import qualified Halogen.HTML.Properties as P
+import qualified Halogen.HTML.Events as E
 import qualified Halogen.HTML.Events.Forms as E
 import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Types as E
-import qualified Halogen.HTML.Properties as A
 import qualified MDL as MDL
 import qualified MDL.Button as MDL
 import qualified MDL.Spinner as MDL
@@ -40,7 +40,7 @@ import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
 import Css.Background (BackgroundImage(..), backgroundImage)
 import Css.String (fromString)
-import Css.Stylesheet (Css(), Rule(..))
+import Css.Stylesheet (StyleM(), Css(), Rule(..))
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
@@ -56,15 +56,13 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
-import Data.URI (runParseURI, parseURI)
+import Data.URI (runParseURI, parseURI, printURI)
 import Data.URI.Types (URI())
 
 import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 
--- TODO: Be more specific, getting some weird compiler errors if I
---       try to import HalogenEffects() though.
 import Halogen
 
 data LoadingStatus
@@ -114,6 +112,12 @@ initialState = State { entries: mempty
                      , loadingStatus: Loading
                      }
 
+import qualified Css.Render as CSS
+import Data.Maybe.Unsafe (fromJust)
+
+unsafeRenderInline :: forall a. StyleM a -> String
+unsafeRenderInline = CSS.render >>> CSS.renderedInline >>> fromJust
+
 {-- update :: State -> Action -> State --}
 {-- update s' a = updateState a s' --}
 {--   where --}
@@ -153,70 +157,61 @@ ui :: forall g p. (Functor g) => Component State Input g p
 ui = component render eval
   where
     render :: Render State Input p
-    render (State state) = H.div_ [ H.text "Hello World!" ]
+    render (State st) = H.div [ P.class_ $ H.className "gla-content" ] $
+      [ H.form [ {- H.onSubmit \_ -> E.preventDefault $> (handler conf $ (H.dNewEntry st)), -}
+                 P.class_ $ H.className "gla-layout--margin-h"
+               ]
+               [ H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
+                 MDL.textfield [ {- E.onInput (H.input UpdateNewURI) -}
+                                 P.required true ] $
+                   MDL.defaultTextfield { id = Just "inp-new-gif"
+                                        , label = Just "URL"
+                                        , type_ = "url"
+                                        } ]
+               , H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
+                 MDL.textfield [ {- E.onInput $ H.input UpdateNewTags -}
+                                 P.required true ] $
+                   MDL.defaultTextfield { id = Just "inp-new-tags"
+                                        , label = Just "Tags"
+                                        } ]
+               , H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
+                 MDL.button $
+                   MDL.defaultButton { text = "Add GIF"
+                                     , elevation = MDL.ButtonRaised
+                                     } ]
+               ]
+      , MDL.spinner (st.loadingStatus == Loading)
+      , H.div [ P.class_ $ H.className "gla-card-holder" ] $ map entryCard st.entries
+      ]
+
+    entryCard :: Render Entry Input p
+    entryCard (Entry e) = H.div
+        [ P.classes [ MDL.card, MDL.shadow 3 ]
+        , P.key $ runUUID e.id
+        ]
+        [ H.div [ P.class_ MDL.cardImageContainer
+        {- , H.style $ backgroundImage $ entryBackground e -}
+                ] []
+        , H.div [ P.class_ MDL.cardHeading ]
+            [ H.h2
+                [ P.class_ MDL.cardHeadingText ] [ H.text $ formatEntryTags e ]
+            ]
+        , H.div [ P.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ P.class_ MDL.cardBottom ]
+            [ H.a
+                [ P.href $ printURI e.uri
+                , P.class_ MDL.cardUri
+                , P.target "_blank" ] [ H.text $ printURI e.uri ]
+            ]
+        ]
+
+    entryBackground :: forall e. { uri :: URI | e } -> BackgroundImage
+    entryBackground e =
+      let url = "url(" <> printURI e.uri <> ")"
+      in BackgroundImage $ fromString url
 
     eval :: Eval Input State Input g
     eval (NoOp next) = return next
-
-{-- ui :: forall eff. AppConfig -> Component (E.Event (AppEff eff)) Action Action --}
-{-- ui conf = render <$> stateful emptyState update --}
-{--   where --}
-{--   render :: State -> H.HTML (E.Event (AppEff eff) Action) --}
-{--   render st = --}
-{--     H.div [ A.class_ $ A.className "gla-content" ] $ --}
-{--       [ H.form [ A.onSubmit \_ -> E.preventDefault $> (handler conf $ (AddNewEntry st)) --}
-{--                , A.class_ $ A.className "gla-layout--margin-h" --}
-{--                ] --}
-{--                [ H.div [ A.class_ $ A.className "gla-form--inline-group" ] [ --}
-{--                  MDL.textfield [ E.onInput (A.input UpdateNewURI <<< url) --}
-{--                                , A.required true ] $ --}
-{--                   MDL.defaultTextfield { id = Just "inp-new-gif" --}
-{--                                        , label = Just "URL" --}
-{--                                        , type_ = "url" --}
-{--                                        } ] --}
-{--                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [ --}
-{--                  MDL.textfield [ E.onInput $ A.input UpdateNewTags --}
-{--                                , A.required true ] $ --}
-{--                    MDL.defaultTextfield { id = Just "inp-new-tags" --}
-{--                                         , label = Just "Tags" --}
-{--                                         } ] --}
-{--                , H.div [ A.class_ $ A.className "gla-form--inline-group" ] [ --}
-{--                  MDL.button $ --}
-{--                    MDL.defaultButton { text = "Add GIF" --}
-{--                                      , elevation = MDL.ButtonRaised --}
-{--                                      } ] --}
-{--                ] --}
-{--       , MDL.spinner (st.loadingStatus == Loading) --}
-{--       , H.div [ A.class_ $ A.className "gla-card-holder" ] $ map entryCard st.entries --}
-{--       ] --}
-
-{--     where --}
-
-{--     entryCard :: Entry -> H.HTML (E.Event (AppEff eff) Action) --}
-{--     entryCard (Entry e) = H.div --}
-{--         [ A.classes [ MDL.card, MDL.shadow 3 ] --}
-{--         , A.key $ runUUID e.id --}
-{--         ] --}
-{--         [ H.div [ A.class_ MDL.cardImageContainer --}
-{--                 , El.style $ backgroundImage $ entryBackground e --}
-{--                 ] [] --}
-{--         , H.div [ A.class_ MDL.cardHeading ] --}
-{--             [ H.h2 --}
-{--                 [ A.class_ MDL.cardHeadingText ] [ H.text $ formatEntryTags e ] --}
-{--             ] --}
-{--         , H.div [ A.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ] --}
-{--         , H.div [ A.class_ MDL.cardBottom ] --}
-{--             [ H.a --}
-{--                 [ A.href $ printURI e.uri --}
-{--                 , A.class_ MDL.cardUri --}
-{--                 , A.target "_blank" ] [ H.text $ printURI e.uri ] --}
-{--             ] --}
-{--         ] --}
-
-{--     entryBackground :: forall e. { uri :: URI | e } -> BackgroundImage --}
-{--     entryBackground e = --}
-{--       let url = "url(" <> printURI e.url <> ")" --}
-{--       in BackgroundImage $ fromString url --}
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
