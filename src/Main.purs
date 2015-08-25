@@ -242,16 +242,16 @@ main = runAff throwException (const $ pure unit) $ do
     Just _ -> pure unit
     Nothing -> liftEff <<< throwException $ error "Couldn't find #app-main. What've you done to my HTML?"
 
+  -- This *should* break loudly.
+  let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
+  fb <- liftEff $ FB.newFirebase fbUri
+  children <- liftEff $ FB.child "entries" fb
+  {-- FB.on FB.Value (dscb app.driver) Nothing children --}
+  let conf = AppConfig { firebase: fb }
+
   liftEff $ log "Up and running."
 
-  -- This *should* break loudly.
-  {-- let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/" --}
-  {-- fb <- FB.newFirebase fbUri --}
-  {-- children <- FB.child "entries" fb --}
-  {-- FB.on FB.Value (dscb driver) Nothing children --}
-  {-- let conf = AppConfig { firebase: fb } --}
-
-  {-- where --}
+  where
     -- TODO: Use Aff instead of Eff for this.
     {-- dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff --}
     {-- dscb driver ds = --}
@@ -259,5 +259,5 @@ main = runAff throwException (const $ pure unit) $ do
     {--     Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries) --}
     {--     Left  err     -> driver $ ShowError $ show err --}
 
-    {-- decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry) --}
-    {-- decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject --}
+    decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
+    decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject
