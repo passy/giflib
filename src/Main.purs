@@ -64,6 +64,8 @@ import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 
 import Halogen
+import Halogen.Component
+import Halogen.Effects
 
 data LoadingStatus
  = Loading

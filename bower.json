@@ -26,7 +26,7 @@
     "purescript-datetime": "~0.9.0",
     "purescript-arrays": "~0.4.0",
     "purescript-exceptions": "~0.3.0",
-    "purescript-halogen": "4ad7f1e605c84d6eda8a9924fceca437695e658e",
+    "purescript-halogen": "passy/purescript-halogen#40aa67f2dc5a131b4f8e4fa5bd1602d91293c95d",
     "purescript-lens": "~0.9",
     "purescript-aff": "~0.11.0",
     "node-uuid": "~1.4.3",
