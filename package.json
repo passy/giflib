@@ -6,6 +6,7 @@
   "scripts": {
     "install": "pulp dep install",
     "start": "pulp server --no-info",
+    "test": "pulp test"
   },
   "repository": {
     "type": "git",
