@@ -34,7 +34,7 @@ import Control.Monad.Aff (runAff)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log, CONSOLE())
-import Control.Monad.Eff.Exception (error, throwException, EXCEPTION(..))
+import Control.Monad.Eff.Exception (error, throwException)
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
@@ -50,6 +50,7 @@ import Data.Either.Unsafe (fromRight)
 import Data.Enum (fromEnum)
 import Data.Foldable (intercalate)
 import Data.Functor (($>))
+import Data.Generic (Generic, gEq, gShow)
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -72,11 +73,13 @@ data LoadingStatus
  | Loaded
  | LoadingError String
 
+derive instance genericLoadingStatus :: Generic LoadingStatus
+
 instance eqLoadingStatus :: Eq LoadingStatus where
-  eq Loading Loading                    = true
-  eq Loaded Loaded                      = true
-  eq (LoadingError a) (LoadingError b)  = a == b
-  eq _ _                                = false
+  eq = gEq
+
+instance showLoadingStatus :: Show LoadingStatus where
+  show = gShow
 
 newtype State = State { entries       :: Array Entry   -- ^ All entries matching the tag
                       , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
