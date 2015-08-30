@@ -167,15 +167,13 @@ ui = component render eval
                , P.class_ $ H.className "gla-layout--margin-h"
                ]
                [ H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
-                 MDL.textfield [ {- E.onInput (H.input UpdateNewURI) -}
-                                 P.required true ] $
+                 MDL.textfield [ E.onValueChange $ E.input UpdateNewURI ] $
                    MDL.defaultTextfield { id = Just "inp-new-gif"
                                         , label = Just "URL"
                                         , type_ = "url"
                                         } ]
                , H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
-                 MDL.textfield [ {- E.onInput $ H.input UpdateNewTags -}
-                                 P.required true ] $
+                 MDL.textfield [ E.onValueChange $ E.input UpdateNewTags ] $
                    MDL.defaultTextfield { id = Just "inp-new-tags"
                                         , label = Just "Tags"
                                         } ]
@@ -215,8 +213,15 @@ ui = component render eval
       let url = "url(" <> printURI e.uri <> ")"
       in BackgroundImage $ fromString url
 
+    -- All of them are no-ops for now.
     eval :: Eval Input State Input g
     eval (NoOp next) = return next
+    eval (ResetNewForm next) = return next
+    eval (LoadingAction status next) = return next
+    eval (UpdateNewURI str next) = return next
+    eval (UpdateNewTags str next) = return next
+    eval (UpdateEntries entries next) = return next
+    eval (ShowError str next) = return next
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
