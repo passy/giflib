@@ -38,6 +38,7 @@ import Control.Monad.Eff.Exception (error, throwException)
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
+import Data.Monoid (mempty)
 import Css.Background (BackgroundImage(..), backgroundImage)
 import Css.String (fromString)
 import Css.Stylesheet (StyleM(), Css(), Rule(..))
@@ -54,11 +55,11 @@ import Data.Generic (Generic, gEq, gShow)
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 import Data.URI (runParseURI, parseURI, printURI)
 import Data.URI.Types (URI())
+import Halogen.Query.StateF (modify, gets, get)
 
 import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
@@ -216,7 +217,9 @@ ui = component render eval
     -- All of them are no-ops for now.
     eval :: Eval Input State Input g
     eval (NoOp next) = return next
-    eval (ResetNewForm next) = return next
+    -- Woaah, this smells like a bug. If I don't explicitly unwrap or even
+    -- use id, it fails with an instance resolution error!
+    eval (ResetNewForm next) = modify (\(State s) -> State (s { newUrl = Nothing, newTags = Set.empty })) $> next
     eval (LoadingAction status next) = return next
     eval (UpdateNewURI str next) = return next
     eval (UpdateNewTags str next) = return next
