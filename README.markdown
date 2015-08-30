@@ -8,29 +8,19 @@ PureScript and Halogen.
 ```bash
 $ bower install
 $ npm install
-$ npm run build
+$ npm test
+$ npm start
 ```
 
 ## Development
 
 ```bash
 # Continously build in the background
-$ pulp -w build
+$ pulp server
 
 # Run and watch the tests
 $ pulp -w test
 
-# Build for "production"
-$ gulp
-
-# Run a dev server
-$ npm run serve
-
 # Open the web page
-$ open http://localhost:8080
+$ open http://localhost:1337
 ```
-
-Using `pulp build` is a lot faster than gulp, but unfortunately you'll have to
-go through the long `gulp` process if you actually want to see the page in the
-browser. Luckily, we're using PureScript here so you don't need your browser
-most of the time during development. Type safety and stuff.
