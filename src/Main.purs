@@ -163,8 +163,8 @@ ui = component render eval
   where
     render :: Render State Input p
     render (State st) = H.div [ P.class_ $ H.className "gla-content" ] $
-      [ H.form [ {- H.onSubmit \_ -> E.preventDefault $> (handler conf $ (H.dNewEntry st)), -}
-                 P.class_ $ H.className "gla-layout--margin-h"
+      [ H.form [ E.onSubmit (E.input_ NoOp)
+               , P.class_ $ H.className "gla-layout--margin-h"
                ]
                [ H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
                  MDL.textfield [ {- E.onInput (H.input UpdateNewURI) -}
