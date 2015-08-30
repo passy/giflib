@@ -5,3 +5,4 @@ bower_components
 npm-debug.log
 .psci_modules
 public/js/*.js
+.psci

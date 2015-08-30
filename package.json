@@ -4,10 +4,8 @@
   "description": "Web frontend for giflib",
   "main": "index.js",
   "scripts": {
-    "test": "pulp test && gulp build",
-    "build": "gulp build",
-    "start": "http-server dist/",
-    "watch": "gulp watch"
+    "install": "pulp dep install",
+    "start": "pulp server --no-info",
   },
   "repository": {
     "type": "git",
@@ -23,10 +21,6 @@
   },
   "homepage": "https://github.com/passy/giflib-web",
   "devDependencies": {
-    "del": "^1.2.0",
-    "gulp": "^3.8.10",
-    "http-server": "^0.8.0",
-    "mkdirp": "^0.5.0",
     "node-uuid": "^1.4.3",
     "pulp": "^4.0.2",
     "purescript": "0.7.3-fixed",
