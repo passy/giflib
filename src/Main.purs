@@ -59,7 +59,7 @@ import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 import Data.URI (runParseURI, parseURI, printURI)
 import Data.URI.Types (URI())
-import Halogen.Query.StateF (modify, gets, get)
+import Halogen.Query (modify, gets, get)
 
 import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
