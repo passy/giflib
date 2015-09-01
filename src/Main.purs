@@ -217,8 +217,6 @@ ui = component render eval
     -- All of them are no-ops for now.
     eval :: Eval Input State Input g
     eval (NoOp next) = return next
-    -- Woaah, this smells like a bug. If I don't explicitly unwrap or even
-    -- use id, it fails with an instance resolution error!
     eval (ResetNewForm next) = modify resetState $> next
     eval (LoadingAction status next) = return next
     eval (UpdateNewURI str next) = return next
