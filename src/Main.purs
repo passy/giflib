@@ -219,12 +219,16 @@ ui = component render eval
     eval (NoOp next) = return next
     -- Woaah, this smells like a bug. If I don't explicitly unwrap or even
     -- use id, it fails with an instance resolution error!
-    eval (ResetNewForm next) = modify (\(State s) -> State (s { newUrl = Nothing, newTags = Set.empty })) $> next
+    eval (ResetNewForm next) = modify resetState $> next
     eval (LoadingAction status next) = return next
     eval (UpdateNewURI str next) = return next
     eval (UpdateNewTags str next) = return next
     eval (UpdateEntries entries next) = return next
     eval (ShowError str next) = return next
+
+    resetState :: State -> State
+    resetState (State st) =
+      State $ st { newUrl = Nothing, newTags = Set.empty }
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
