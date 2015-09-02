@@ -35,6 +35,7 @@ import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Exception (error, throwException)
+import Control.Plus (empty)
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
@@ -112,17 +113,23 @@ data Request
 initialState :: State
 initialState = State { entries: mempty
                      , tag: mempty
-                     , newUrl: Nothing
-                     , newTags: Set.empty
+                     , newUrl: empty
+                     , newTags: mempty
                      , error: mempty
                      , loadingStatus: Loading
                      }
 
+resetState :: State -> State
+resetState (State st) =
+  State $ st { newUrl = empty, newTags = mempty }
+
+-- TODO: Move to a util or wait until Halogen supports this again.
 import qualified Css.Render as CSS
 import Data.Maybe.Unsafe (fromJust)
 
 unsafeRenderInline :: forall a. StyleM a -> String
 unsafeRenderInline = CSS.render >>> CSS.renderedInline >>> fromJust
+
 
 {-- update :: State -> Action -> State --}
 {-- update s' a = updateState a s' --}
@@ -223,10 +230,6 @@ ui = component render eval
     eval (UpdateNewTags str next) = return next
     eval (UpdateEntries entries next) = return next
     eval (ShowError str next) = return next
-
-    resetState :: State -> State
-    resetState (State st) =
-      State $ st { newUrl = Nothing, newTags = Set.empty }
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
