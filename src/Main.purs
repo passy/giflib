@@ -35,11 +35,10 @@ import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Exception (error, throwException)
-import Control.Plus (empty)
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
-import Data.Monoid (mempty)
+import Control.Plus (empty)
 import Css.Background (BackgroundImage(..), backgroundImage)
 import Css.String (fromString)
 import Css.Stylesheet (StyleM(), Css(), Rule(..))
@@ -49,6 +48,7 @@ import Data.Argonaut.Encode (encodeJson)
 import Data.Bifunctor (lmap, rmap)
 import Data.Either (Either(Left, Right), either)
 import Data.Either.Unsafe (fromRight)
+import Data.Either.Extra (rightToMaybe)
 import Data.Enum (fromEnum)
 import Data.Foldable (intercalate)
 import Data.Functor (($>))
@@ -56,6 +56,7 @@ import Data.Generic (Generic, gEq, gShow)
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
 import Data.URI (runParseURI, parseURI, printURI)
@@ -223,13 +224,20 @@ ui = component render eval
 
     -- All of them are no-ops for now.
     eval :: Eval Input State Input g
-    eval (NoOp next) = return next
-    eval (ResetNewForm next) = modify resetState $> next
-    eval (LoadingAction status next) = return next
-    eval (UpdateNewURI str next) = return next
-    eval (UpdateNewTags str next) = return next
-    eval (UpdateEntries entries next) = return next
-    eval (ShowError str next) = return next
+    eval (NoOp next) =
+      pure next
+    eval (ResetNewForm next) =
+      modify resetState $> next
+    eval (LoadingAction status next) =
+      modify (\(State s) -> State $ s { loadingStatus = status }) $> next
+    eval (UpdateNewURI str next) =
+      modify (\(State s) -> State $ s { newUrl = rightToMaybe $ runParseURI str }) $> next
+    eval (UpdateNewTags str next) =
+      modify (\(State s) -> State $ s { newTags = processTagInput str }) $> next
+    eval (UpdateEntries entries next) =
+      modify (\(State s) -> State $ s { entries = entries }) $> next
+    eval (ShowError str next) =
+      modify (\(State s) -> State $ s { error = str }) $> next
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
