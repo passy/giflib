@@ -30,6 +30,7 @@ import qualified Web.Firebase as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 
+import Control.Error.Util (hush)
 import Control.Monad.Aff (runAff)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
@@ -48,7 +49,6 @@ import Data.Argonaut.Encode (encodeJson)
 import Data.Bifunctor (lmap, rmap)
 import Data.Either (Either(Left, Right), either)
 import Data.Either.Unsafe (fromRight)
-import Data.Either.Extra (rightToMaybe)
 import Data.Enum (fromEnum)
 import Data.Foldable (intercalate)
 import Data.Functor (($>))
@@ -231,7 +231,7 @@ ui = component render eval
     eval (LoadingAction status next) =
       modify (\(State s) -> State $ s { loadingStatus = status }) $> next
     eval (UpdateNewURI str next) =
-      modify (\(State s) -> State $ s { newUrl = rightToMaybe $ runParseURI str }) $> next
+      modify (\(State s) -> State $ s { newUrl = hush $ runParseURI str }) $> next
     eval (UpdateNewTags str next) =
       modify (\(State s) -> State $ s { newTags = processTagInput str }) $> next
     eval (UpdateEntries entries next) =
