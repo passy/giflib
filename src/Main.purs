@@ -42,7 +42,6 @@ import Control.Monad.Reader.Trans
 import Control.Plus (empty)
 import Css.Background (BackgroundImage(..), backgroundImage)
 import Css.String (fromString)
-import Css.Stylesheet (StyleM(), Css(), Rule(..))
 import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
@@ -66,6 +65,7 @@ import Halogen.Query (modify, gets, get)
 import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
+import Web.Giflib.HTML.CSS.Unsafe (style)
 
 import Halogen
 import Halogen.Component
@@ -123,14 +123,6 @@ initialState = State { entries: mempty
 resetState :: State -> State
 resetState (State st) =
   State $ st { newUrl = empty, newTags = mempty }
-
--- TODO: Move to a util or wait until Halogen supports this again.
-import qualified Css.Render as CSS
-import Data.Maybe.Unsafe (fromJust)
-
-unsafeRenderInline :: forall a. StyleM a -> String
-unsafeRenderInline = CSS.render >>> CSS.renderedInline >>> fromJust
-
 
 {-- update :: State -> Action -> State --}
 {-- update s' a = updateState a s' --}
@@ -202,7 +194,7 @@ ui = component render eval
         , P.key $ runUUID e.id
         ]
         [ H.div [ P.class_ MDL.cardImageContainer
-        {- , H.style $ backgroundImage $ entryBackground e -}
+        , style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ P.class_ MDL.cardHeading ]
             [ H.h2
