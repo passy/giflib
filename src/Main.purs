@@ -125,14 +125,10 @@ resetState :: State -> State
 resetState (State st) =
   State $ st { newUrl = empty, newTags = mempty }
 
-canSaveState :: State -> Boolean
-canSaveState (State s) =
-  all isJust [s.newUrl, s.newTags] && s.loadingStatus == Loaded
-
 newEntry :: State -> UUID -> Date.Date -> Maybe Entry
 newEntry (State s) uuid now = do
-  uri <- s.newUrl
   let tags = s.newTags
+  uri <- s.newUrl
   guard $ s.loadingStatus == Loaded
 
   return $ Entry { id: uuid
@@ -161,7 +157,7 @@ newEntry (State s) uuid now = do
 {--   liftEff $ FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children --}
 {--   E.yield ResetNewForm --}
 
-ui :: forall g p. (Functor g) => Component State Input g p
+ui :: forall p. Component State Input (Aff (AppEffects ())) p
 ui = component render eval
   where
     render :: Render State Input p
@@ -217,12 +213,12 @@ ui = component render eval
       in BackgroundImage $ fromString url
 
     -- All of them are no-ops for now.
-    eval :: Eval Input State Input g
+    eval :: Eval Input State Input (Aff (AppEffects ()))
     eval (NoOp next) =
       pure next
     eval (AddNewEntry next) = do
-      id' <- liftFI NUUID.v4
-      now <- liftFI Date.now
+      -- id' <- liftEff NUUID.v4
+      -- now <- liftEff Date.now
       (State state) <- get
       pure next
     eval (ResetNewForm next) =
@@ -240,7 +236,7 @@ ui = component render eval
 
 
 addEntry :: forall eff. Entry -> Aff ( firebase :: FB.FirebaseEff | eff ) Unit
-addEntry = do
+addEntry entry = do
   -- Shit, we do I get the conf from?
   -- children <- FB.child "entries" conf.firebase
   -- FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
