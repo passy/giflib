@@ -141,28 +141,8 @@ entryFromState (State s) uuid now = do
                 , date: now
                 }
 
--- | Handle a request to an external service
-{-- handler :: forall eff m. --}
-{--   AppConfig -> --}
-{--   Request -> --}
-{--   E.Event (AppEff eff) Action --}
-{-- handler (AppConfig conf) (AddNewEntry s) = do --}
-{--   id' <- liftEff NUUID.v4 --}
-{--   now <- liftEff Date.now --}
-{--   let entry = Entry { id: uuid $ show id' --}
-{--                     , tags: s.newTags --}
-{--                     , url: s.newUrl --}
-{--                     , date: now --}
-{--                     } --}
-
-{--   -- TODO: Would be nice to have a MonadReader/ReaderT for this. Like, really --}
-{--   -- nice. But I'm too stupid. --}
-{--   children <- liftEff $ FB.child "entries" conf.firebase --}
-{--   liftEff $ FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children --}
-{--   E.yield ResetNewForm --}
-
-ui :: forall p. Component State Input (Aff AppEffects) p
-ui = component render eval
+ui :: forall p. AppConfig -> Component State Input (Aff AppEffects) p
+ui (AppConfig conf) = component render eval
   where
     render :: Render State Input p
     render (State st) = H.div [ P.class_ $ H.className "gla-content" ] $
@@ -217,23 +197,31 @@ ui = component render eval
       in BackgroundImage $ fromString url
 
     -- Just to help the type checker ...
-    affUuidV4 :: forall eff. Aff ( uuid :: NUUID.UUIDEff | eff ) NUUID.UUID
+    affUuidV4 :: forall eff. Aff (uuid :: NUUID.UUIDEff | eff) NUUID.UUID
     affUuidV4 = liftEff $ NUUID.v4
 
-    affDateNow :: forall eff. Aff ( now :: Date.Now | eff ) Date.Date
+    affDateNow :: forall eff. Aff (now :: Date.Now | eff) Date.Date
     affDateNow = liftEff $ Date.now
+
+    saveEntry :: forall eff. FB.Firebase -> Entry -> Aff (firebase :: FB.FirebaseEff | eff) Unit
+    saveEntry firebase entry = do
+      children <- liftEff $ FB.child "entries" firebase
+      liftEff $ FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
 
     -- All of them are no-ops for now.
     eval :: Eval Input State Input (Aff AppEffects)
     eval (NoOp next) =
       pure next
     eval (AddNewEntry next) = do
-      id' <- liftFI $ affUuidV4
+      id' <- liftFI $ nodeUUIDToUUID <$> affUuidV4
       now <- liftFI $ affDateNow
       state <- get
 
-      let entry = entryFromState state (nodeUUIDToUUID id') now
-
+      let entry = entryFromState state id' now
+      case entry of
+        Just entry' -> liftFI $ saveEntry conf.firebase entry'
+        _           -> pure unit
+      -- YES! Now reset form, handle loading and so on!
       pure next
     eval (ResetNewForm next) =
       modify resetState $> next
@@ -278,19 +266,13 @@ main :: Eff AppEffects Unit
 main = runAff throwException (const $ pure unit) $ do
   log "Booting. Beep. Boop."
 
-  app <- runUI ui initialState
+  conf <- liftEff $ setupFB
+  app <- runUI (ui conf) initialState
   mainEl <- liftEff $ appendToQuerySelector "#app-main" app.node
 
   case mainEl of
     Just _ -> pure unit
     Nothing -> liftEff <<< throwException $ error "Couldn't find #app-main. What've you done to my HTML?"
-
-  -- This *should* break loudly.
-  let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
-  fb <- liftEff $ FB.newFirebase fbUri
-  children <- liftEff $ FB.child "entries" fb
-  {-- FB.on FB.Value (dscb app.driver) Nothing children --}
-  let conf = AppConfig { firebase: fb }
 
   log "Up and running."
 
@@ -304,3 +286,12 @@ main = runAff throwException (const $ pure unit) $ do
 
     decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
     decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject
+
+    setupFB :: forall eff. Eff (firebase :: FB.FirebaseEff | eff) AppConfig
+    setupFB = do
+      -- This *should* break loudly.
+      let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
+      fb <- FB.newFirebase fbUri
+      children <- FB.child "entries" fb
+      {-- FB.on FB.Value (dscb app.driver) Nothing children --}
+      return $ AppConfig { firebase: fb }
