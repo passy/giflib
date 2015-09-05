@@ -31,14 +31,16 @@ import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 
 import Control.Error.Util (hush)
-import Control.Monad.Aff (runAff)
+import Control.Monad.Aff (Aff(), runAff)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Exception (error, throwException)
+import Control.Monad.Free (liftFI)
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
+import Control.MonadPlus (guard)
 import Control.Plus (empty)
 import Css.Background (BackgroundImage(..), backgroundImage)
 import Css.String (fromString)
@@ -49,12 +51,12 @@ import Data.Bifunctor (lmap, rmap)
 import Data.Either (Either(Left, Right), either)
 import Data.Either.Unsafe (fromRight)
 import Data.Enum (fromEnum)
-import Data.Foldable (intercalate)
+import Data.Foldable (all, intercalate)
 import Data.Functor (($>))
 import Data.Generic (Generic, gEq, gShow)
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
 import Data.Tuple (Tuple(..))
@@ -62,8 +64,9 @@ import Data.URI (runParseURI, parseURI, printURI)
 import Data.URI.Types (URI())
 import Halogen.Query (modify, gets, get)
 
+
 import Web.Giflib.Internal.Unsafe
-import Web.Giflib.Types (Tag(), Entry(..), uuid, runUUID, runEntryList)
+import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 import Web.Giflib.HTML.CSS.Unsafe (style)
 
@@ -95,6 +98,7 @@ newtype State = State { entries       :: Array Entry   -- ^ All entries matching
 data Input a
   = NoOp a
   | ResetNewForm a
+  | AddNewEntry a
   | LoadingAction LoadingStatus a
   | UpdateNewURI String a
   | UpdateNewTags String a
@@ -108,9 +112,6 @@ type AppEffects eff = HalogenEffects ( uuid :: NUUID.UUIDEff
                                      , now :: Date.Now
                                      , firebase :: FB.FirebaseEff | eff)
 
-data Request
-  = AddNewEntry State
-
 initialState :: State
 initialState = State { entries: mempty
                      , tag: mempty
@@ -123,6 +124,22 @@ initialState = State { entries: mempty
 resetState :: State -> State
 resetState (State st) =
   State $ st { newUrl = empty, newTags = mempty }
+
+canSaveState :: State -> Boolean
+canSaveState (State s) =
+  all isJust [s.newUrl, s.newTags] && s.loadingStatus == Loaded
+
+newEntry :: State -> UUID -> Date.Date -> Maybe Entry
+newEntry (State s) uuid now = do
+  uri <- s.newUrl
+  let tags = s.newTags
+  guard $ s.loadingStatus == Loaded
+
+  return $ Entry { id: uuid
+                , uri: uri
+                , tags: tags
+                , date: now
+                }
 
 -- | Handle a request to an external service
 {-- handler :: forall eff m. --}
@@ -203,6 +220,11 @@ ui = component render eval
     eval :: Eval Input State Input g
     eval (NoOp next) =
       pure next
+    eval (AddNewEntry next) = do
+      id' <- liftFI NUUID.v4
+      now <- liftFI Date.now
+      (State state) <- get
+      pure next
     eval (ResetNewForm next) =
       modify resetState $> next
     eval (LoadingAction status next) =
@@ -215,6 +237,14 @@ ui = component render eval
       modify (\(State s) -> State $ s { entries = entries }) $> next
     eval (ShowError str next) =
       modify (\(State s) -> State $ s { error = str }) $> next
+
+
+addEntry :: forall eff. Entry -> Aff ( firebase :: FB.FirebaseEff | eff ) Unit
+addEntry = do
+  -- Shit, we do I get the conf from?
+  -- children <- FB.child "entries" conf.firebase
+  -- FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
+  return unit
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
