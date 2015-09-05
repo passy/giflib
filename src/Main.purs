@@ -30,13 +30,17 @@ import qualified Web.Firebase as FB
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 
+import qualified Control.Monad.Eff.Console as C
+
 import Control.Error.Util (hush)
 import Control.Monad.Aff (Aff(), runAff)
+import Control.Monad.Aff.Class (liftAff)
+import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Console (log, CONSOLE())
+import Control.Monad.Eff.Console (CONSOLE())
 import Control.Monad.Eff.Exception (error, throwException)
-import Control.Monad.Free (liftFI)
+import Control.Monad.Free (liftFI, liftF)
 import Control.Monad.Reader
 import Control.Monad.Reader.Class
 import Control.Monad.Reader.Trans
@@ -107,10 +111,10 @@ data Input a
 
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
 
-type AppEffects eff = HalogenEffects ( uuid :: NUUID.UUIDEff
+type AppEffects = HalogenEffects ( uuid :: NUUID.UUIDEff
                                      , console :: CONSOLE
                                      , now :: Date.Now
-                                     , firebase :: FB.FirebaseEff | eff)
+                                     , firebase :: FB.FirebaseEff)
 
 initialState :: State
 initialState = State { entries: mempty
@@ -157,7 +161,7 @@ newEntry (State s) uuid now = do
 {--   liftEff $ FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children --}
 {--   E.yield ResetNewForm --}
 
-ui :: forall p. Component State Input (Aff (AppEffects ())) p
+ui :: forall p. Component State Input (Aff AppEffects) p
 ui = component render eval
   where
     render :: Render State Input p
@@ -212,13 +216,20 @@ ui = component render eval
       let url = "url(" <> printURI e.uri <> ")"
       in BackgroundImage $ fromString url
 
+    -- Just to help the type checker ...
+    affUuidV4 :: forall eff. Aff ( uuid :: NUUID.UUIDEff | eff ) NUUID.UUID
+    affUuidV4 = liftEff $ NUUID.v4
+
+    affDateNow :: forall eff. Aff ( now :: Date.Now | eff ) Date.Date
+    affDateNow = liftEff $ Date.now
+
     -- All of them are no-ops for now.
-    eval :: Eval Input State Input (Aff (AppEffects ()))
+    eval :: Eval Input State Input (Aff AppEffects)
     eval (NoOp next) =
       pure next
     eval (AddNewEntry next) = do
-      -- id' <- liftEff NUUID.v4
-      -- now <- liftEff Date.now
+      id' <- liftFI $ affUuidV4
+      now <- liftFI $ affDateNow
       (State state) <- get
       pure next
     eval (ResetNewForm next) =
@@ -260,9 +271,9 @@ processTagInput :: String -> Set.Set Tag
 processTagInput = trim >>> split " " >>> List.toList >>> Set.fromList
 
 -- Application Main
-main :: Eff (AppEffects ()) Unit
+main :: Eff AppEffects Unit
 main = runAff throwException (const $ pure unit) $ do
-  liftEff $ log "Booting. Beep. Boop."
+  log "Booting. Beep. Boop."
 
   app <- runUI ui initialState
   mainEl <- liftEff $ appendToQuerySelector "#app-main" app.node
@@ -278,7 +289,7 @@ main = runAff throwException (const $ pure unit) $ do
   {-- FB.on FB.Value (dscb app.driver) Nothing children --}
   let conf = AppConfig { firebase: fb }
 
-  liftEff $ log "Up and running."
+  log "Up and running."
 
   where
     -- TODO: Use Aff instead of Eff for this.
