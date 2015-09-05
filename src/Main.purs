@@ -124,21 +124,6 @@ resetState :: State -> State
 resetState (State st) =
   State $ st { newUrl = empty, newTags = mempty }
 
-{-- update :: State -> Action -> State --}
-{-- update s' a = updateState a s' --}
-{--   where --}
-{--   updateState NoOp s                = s --}
-{--   updateState ResetNewForm s        = s { newUrl = mempty --}
-{--                                         -- Typechecker doesn't like Set.empty --}
-{--                                         -- here, I don't know why. --}
-{--                                         , newTags = (Set.empty :: Set.Set Tag) --}
-{--                                         } --}
-{--   updateState (LoadingAction l a) s = updateState a $ s { loadingStatus = l } --}
-{--   updateState (UpdateNewURI e) s    = s { newUrl  = unsafeShowPrintId $ either (const Nothing) (pure) (runParseURI <<< parseURI $ e) } --}
-{--   updateState (UpdateNewTags e) s   = s { newTags = processTagInput e } --}
-{--   updateState (UpdateEntries e) s   = s { entries = e } --}
-{--   updateState (ShowError e) s       = s { error   = e } --}
-
 -- | Handle a request to an external service
 {-- handler :: forall eff m. --}
 {--   AppConfig -> --}
