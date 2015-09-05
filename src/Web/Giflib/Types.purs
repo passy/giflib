@@ -2,7 +2,7 @@ module Web.Giflib.Types where
 
 import Prelude
 import Data.Argonaut.Combinators ((.?), (?>>=), (~>), (:=))
-import Data.Argonaut.Core (Json(..), JArray(..), JObject(..), jsonEmptyObject, foldJsonObject)
+import Data.Argonaut.Core (Json(), JArray(), JObject(), jsonEmptyObject, foldJsonObject)
 import Data.Argonaut.Decode (DecodeJson, decodeJson)
 import Data.Argonaut.Encode (EncodeJson)
 import Data.Array (snoc)
@@ -22,6 +22,7 @@ import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
 import qualified Data.Time as Time
 import qualified Math as Math
+import qualified Node.UUID as NUUID
 
 type Tag = String
 
@@ -54,6 +55,9 @@ instance showUUID :: Show UUID where
 
 uuid :: String -> UUID
 uuid = UUID
+
+nodeUUIDToUUID :: NUUID.UUID -> UUID
+nodeUUIDToUUID = show >>> uuid
 
 runUUID :: UUID -> String
 runUUID (UUID s) = s

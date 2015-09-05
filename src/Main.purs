@@ -70,7 +70,7 @@ import Halogen.Query (modify, gets, get)
 
 
 import Web.Giflib.Internal.Unsafe
-import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList)
+import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 import Web.Giflib.HTML.CSS.Unsafe (style)
 
@@ -129,8 +129,8 @@ resetState :: State -> State
 resetState (State st) =
   State $ st { newUrl = empty, newTags = mempty }
 
-newEntry :: State -> UUID -> Date.Date -> Maybe Entry
-newEntry (State s) uuid now = do
+entryFromState :: State -> UUID -> Date.Date -> Maybe Entry
+entryFromState (State s) uuid now = do
   let tags = s.newTags
   uri <- s.newUrl
   guard $ s.loadingStatus == Loaded
@@ -230,7 +230,10 @@ ui = component render eval
     eval (AddNewEntry next) = do
       id' <- liftFI $ affUuidV4
       now <- liftFI $ affDateNow
-      (State state) <- get
+      state <- get
+
+      let entry = entryFromState state (nodeUUIDToUUID id') now
+
       pure next
     eval (ResetNewForm next) =
       modify resetState $> next
