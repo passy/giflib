@@ -27,6 +27,7 @@ import qualified MDL.Spinner as MDL
 import qualified MDL.Textfield as MDL
 import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
+import qualified Web.Firebase.Monad.Aff as FBA
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 
@@ -266,15 +267,21 @@ main = runAff throwException (const $ pure unit) $ do
     Just _ -> pure unit
     Nothing -> liftEff <<< throwException $ error "Couldn't find #app-main. What've you done to my HTML?"
 
+  children <- FB.child "entries" conf.firebase
+  checkUpdates children app.driver
+
   log "Up and running."
 
   where
-    -- TODO: Use Aff instead of Eff for this.
-    {-- dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff --}
-    {-- dscb driver ds = --}
-    {--   case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of --}
-    {--     Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries) --}
-    {--     Left  err     -> driver $ ShowError $ show err --}
+    -- TODO: This is how it *should* work
+    -- TODO: Types?
+    checkUpdates children driver = do
+      ds <- FBA.on FB.Value Nothing children
+      case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
+        -- TODO: Loading
+        Right entries -> driver (action $ UpdateEntries entries)
+        Left  err     -> driver (action ShowError $ show err)
+      checkUpdates children
 
     decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
     decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject
@@ -284,6 +291,4 @@ main = runAff throwException (const $ pure unit) $ do
       -- This *should* break loudly.
       let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
       fb <- FB.newFirebase fbUri
-      children <- FB.child "entries" fb
-      {-- FB.on FB.Value (dscb app.driver) Nothing children --}
       return $ AppConfig { firebase: fb }
