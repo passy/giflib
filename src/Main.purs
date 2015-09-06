@@ -267,7 +267,8 @@ main = runAff throwException (const $ pure unit) $ do
     Just _ -> pure unit
     Nothing -> liftEff <<< throwException $ error "Couldn't find #app-main. What've you done to my HTML?"
 
-  children <- FB.child "entries" conf.firebase
+  let getFb (AppConfig conf) = conf.firebase
+  children <- liftEff $ FB.child "entries" (getFb conf)
   checkUpdates children app.driver
 
   log "Up and running."
@@ -276,12 +277,13 @@ main = runAff throwException (const $ pure unit) $ do
     -- TODO: This is how it *should* work
     -- TODO: Types?
     checkUpdates children driver = do
-      ds <- FBA.on FB.Value Nothing children
-      case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
-        -- TODO: Loading
-        Right entries -> driver (action $ UpdateEntries entries)
-        Left  err     -> driver (action ShowError $ show err)
-      checkUpdates children
+      ds <- FBA.on FB.Value children
+      log "Data received."
+      -- case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
+      --   -- TODO: Loading
+      --   Right entries -> driver (action $ UpdateEntries entries)
+      --   Left  err     -> driver (action ShowError $ show err)
+      checkUpdates children driver
 
     decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
     decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject

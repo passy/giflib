@@ -1,7 +1,10 @@
 module Web.Firebase.Monad.Aff where
 
+import Prelude
+import Data.Maybe (Maybe(..))
 import Control.Monad.Eff (Eff())
-import Control.Monad.Aff (Aff())
+import Control.Monad.Aff (Aff(), makeAff)
+import Control.Monad.Eff.Exception (error)
 
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.Types as FB
@@ -12,7 +15,9 @@ on :: forall eff.
       FB.EventType ->
       FB.Firebase ->
       Aff (firebase :: FB.FirebaseEff | eff) FB.DataSnapshot
-on etype fb = FB.on etype dataCb errCb fb
-  where
-    dataCb = undefined
-    errCb = undefined
+on etype fb = makeAff (\eb cb -> FB.on etype cb Nothing fb)
+  -- where
+  --   onErr eb err =
+  --     case err of
+  --       Just _  -> eb $ error "Firebase Error (sorry, I can't tell you what went wrong)"
+  --       Nothing -> pure unit
