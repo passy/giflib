@@ -16,6 +16,7 @@ import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Core as H
+import qualified Halogen.HTML.CSS as CSS
 import qualified Halogen.HTML.Properties as P
 import qualified Halogen.HTML.Events as E
 import qualified Halogen.HTML.Events.Forms as E
@@ -176,7 +177,7 @@ ui (AppConfig conf) = component render eval
         , P.key $ runUUID e.id
         ]
         [ H.div [ P.class_ MDL.cardImageContainer
-                -- , inlineStyle $ backgroundImage $ entryBackground e
+                , CSS.style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ P.class_ MDL.cardHeading ]
             [ H.h2
