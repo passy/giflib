@@ -203,11 +203,6 @@ ui (AppConfig conf) = component render eval
     affDateNow :: forall eff. Aff (now :: Date.Now | eff) Date.Date
     affDateNow = liftEff $ Date.now
 
-    saveEntry :: forall eff. FB.Firebase -> Entry -> Aff (firebase :: FB.FirebaseEff | eff) Unit
-    saveEntry firebase entry = do
-      children <- liftEff $ FB.child "entries" firebase
-      liftEff $ FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
-
     -- All of them are no-ops for now.
     eval :: Eval Input State Input (Aff AppEffects)
     eval (NoOp next) =
@@ -236,13 +231,10 @@ ui (AppConfig conf) = component render eval
     eval (ShowError str next) =
       modify (\(State s) -> State $ s { error = str }) $> next
 
-
-addEntry :: forall eff. Entry -> Aff ( firebase :: FB.FirebaseEff | eff ) Unit
-addEntry entry = do
-  -- Shit, we do I get the conf from?
-  -- children <- FB.child "entries" conf.firebase
-  -- FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
-  return unit
+saveEntry :: forall eff. FB.Firebase -> Entry -> Aff (firebase :: FB.FirebaseEff | eff) Unit
+saveEntry firebase entry = liftEff $ do
+  children <- FB.child "entries" firebase
+  FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
