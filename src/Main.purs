@@ -277,11 +277,19 @@ main = runAff throwException (const $ pure unit) $ do
   where
     -- TODO: Turn this into an aff-coroutine. It should be a producer.
     firebaseUpdateLoop children driver = do
-      -- Careful, this isn't actually "blocking"
+      -- Careful, this isn't actually "blocking" but emits everything
+      -- on subscription.
       ds <- FBA.on FB.Value children
+      driver (action $ LoadingAction Loading)
       case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
-        Right entries -> driver (action $ UpdateEntries entries)
-        Left  err     -> driver (action $ ShowError $ show err)
+        Right entries -> do
+          -- Combine these. How do I free?!
+          driver $ action $ UpdateEntries entries
+          driver $ action $ LoadingAction Loaded
+        Left  err     -> do
+          -- TODO: One is enough ...
+          driver $ action $ ShowError $ show err
+          driver $ action $ LoadingAction $ LoadingError $ show err
 
       log "New Data!"
 
