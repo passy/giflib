@@ -274,9 +274,9 @@ main = runAff throwException (const $ pure unit) $ do
   log "Up and running."
 
   where
-    -- TODO: This is how it *should* work
     -- TODO: Types?
     checkUpdates children driver = do
+      -- WOOPS, for some reason this isn't blocking.
       ds <- FBA.on FB.Value children
       log "Data received."
       -- case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of

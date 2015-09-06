@@ -47,14 +47,14 @@ showEventType t = case t of
 foreign import onImpl :: forall eff. Fn4
                    String
                    (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit)
-                   (Nullable (FirebaseErr -> Eff eff Unit))
+                   (Nullable (FirebaseErr -> Eff (firebase :: FirebaseEff | eff) Unit))
                    Firebase
                    (Eff (firebase :: FirebaseEff | eff) Unit)
 
 on :: forall eff.
       EventType ->
       (DataSnapshot -> Eff (firebase :: FirebaseEff | eff) Unit) ->
-      Maybe (FirebaseErr -> Eff eff Unit) ->
+      Maybe (FirebaseErr -> Eff (firebase :: FirebaseEff | eff) Unit) ->
       Firebase ->
       Eff (firebase :: FirebaseEff | eff) Unit
 on etype ds cb fb = runFn4 onImpl (showEventType etype) (unsafeEvalEff <<< ds) (toNullable cb) fb
