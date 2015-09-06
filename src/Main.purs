@@ -27,13 +27,14 @@ import qualified MDL.Spinner as MDL
 import qualified MDL.Textfield as MDL
 import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
+import qualified Web.Firebase.Monad.Aff as FBA
 import qualified Web.Firebase.DataSnapshot as DS
 import qualified Web.Firebase.Types as FB
 
 import qualified Control.Monad.Eff.Console as C
 
 import Control.Error.Util (hush)
-import Control.Monad.Aff (Aff(), runAff)
+import Control.Monad.Aff (Aff(), runAff, forkAff)
 import Control.Monad.Aff.Class (liftAff)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff (Eff())
@@ -266,15 +267,23 @@ main = runAff throwException (const $ pure unit) $ do
     Just _ -> pure unit
     Nothing -> liftEff <<< throwException $ error "Couldn't find #app-main. What've you done to my HTML?"
 
+  let getFb (AppConfig conf) = conf.firebase
+  children <- liftEff $ FB.child "entries" (getFb conf)
+
+  _ <- forkAff $ firebaseUpdateLoop children app.driver
+
   log "Up and running."
 
   where
-    -- TODO: Use Aff instead of Eff for this.
-    {-- dscb :: forall req eff. (Action -> eff) -> FB.DataSnapshot -> eff --}
-    {-- dscb driver ds = --}
-    {--   case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of --}
-    {--     Right entries -> driver (LoadingAction Loaded $ UpdateEntries entries) --}
-    {--     Left  err     -> driver $ ShowError $ show err --}
+    -- TODO: Turn this into an aff-coroutine. It should be a producer.
+    firebaseUpdateLoop children driver = do
+      -- Careful, this isn't actually "blocking"
+      ds <- FBA.on FB.Value children
+      case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
+        Right entries -> driver (action $ UpdateEntries entries)
+        Left  err     -> driver (action $ ShowError $ show err)
+
+      log "New Data!"
 
     decodeEntries :: JObject -> Either Foreign.ForeignError (Array Entry)
     decodeEntries = rmap runEntryList <<< lmap Foreign.JSONError <<< decodeJson <<< fromObject
@@ -284,6 +293,4 @@ main = runAff throwException (const $ pure unit) $ do
       -- This *should* break loudly.
       let fbUri = fromRight $ runParseURI "https://giflib-web.firebaseio.com/"
       fb <- FB.newFirebase fbUri
-      children <- FB.child "entries" fb
-      {-- FB.on FB.Value (dscb app.driver) Nothing children --}
       return $ AppConfig { firebase: fb }
