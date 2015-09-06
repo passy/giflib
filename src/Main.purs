@@ -73,7 +73,6 @@ import Halogen.Query (modify, gets, get)
 import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
-import Web.Giflib.HTML.CSS.Unsafe (style)
 
 import Halogen
 import Halogen.Component
@@ -177,7 +176,7 @@ ui (AppConfig conf) = component render eval
         , P.key $ runUUID e.id
         ]
         [ H.div [ P.class_ MDL.cardImageContainer
-        , style $ backgroundImage $ entryBackground e
+                -- , inlineStyle $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ P.class_ MDL.cardHeading ]
             [ H.h2
@@ -194,6 +193,7 @@ ui (AppConfig conf) = component render eval
 
     entryBackground :: forall e. { uri :: URI | e } -> BackgroundImage
     entryBackground e =
+      -- Totally unsafe! CSS injection and stuff.
       let url = "url(" <> printURI e.uri <> ")"
       in BackgroundImage $ fromString url
 
