@@ -13,6 +13,7 @@ html, body {
   background-color: white;
   height: 4px;
 }
+
 .gla-app .mdl-card {
   height: auto;
   display: -webkit-box;
@@ -25,9 +26,7 @@ html, body {
       -ms-flex-direction: column;
           flex-direction: column;
 }
-.gla-app .mdl-card > * {
-  height: auto;
-}
+
 .gla-app .mdl-card .mdl-card__supporting-text {
   margin: 40px;
   -webkit-box-flex: 1;
@@ -211,6 +210,16 @@ html, body {
 
 .gla-form--inline-group::last-child {
   margin-right: 0;
+}
+
+.gla-card__image-container {
+  background-color: rgb(0,172,193);
+  background-repeat: repeat;
+  background-position: 50% 50%;
+  background-size: cover;
+  background-origin: padding-box;
+  background-attachment: scroll;
+  height: 200px;
 }
 
 /* MDL Additions */

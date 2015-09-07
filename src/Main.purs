@@ -176,15 +176,15 @@ ui (AppConfig conf) = component render eval
         [ P.classes $ [ MDL.card, MDL.shadow 3, MDL.color "white" ] <> MDL.cellCol 6
         , P.key $ runUUID e.id
         ]
-        [ H.div [ P.class_ MDL.cardImageContainer
+        [ H.div [ P.class_ $ H.className "gla-card__image-container"
                 , CSS.style $ backgroundImage $ entryBackground e
                 ] []
-        , H.div [ P.class_ MDL.cardHeading ]
+        , H.div [ P.class_ MDL.cardTitle ]
             [ H.h2
-                [ P.class_ MDL.cardHeadingText ] [ H.text $ formatEntryTags e ]
+                [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e ]
             ]
-        , H.div [ P.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ]
-        , H.div [ P.class_ MDL.cardBottom ]
+        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ P.classes [ MDL.cardActions, MDL.cardBorder ] ]
             [ H.a
                 [ P.href $ printURI e.uri
                 , P.class_ MDL.cardUri
