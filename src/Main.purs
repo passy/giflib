@@ -34,6 +34,7 @@ import qualified Web.Firebase.Types as FB
 
 import qualified Control.Monad.Eff.Console as C
 
+import Control.Apply ((*>))
 import Control.Error.Util (hush)
 import Control.Monad.Aff (Aff(), runAff, forkAff)
 import Control.Monad.Aff.Class (liftAff)
@@ -82,7 +83,7 @@ import Halogen.Effects
 data LoadingStatus
  = Loading
  | Loaded
- | LoadingError String
+ | LoadingError
 
 derive instance genericLoadingStatus :: Generic LoadingStatus
 
@@ -104,7 +105,7 @@ data Input a
   = NoOp a
   | ResetNewForm a
   | AddNewEntry a
-  | LoadingAction LoadingStatus a
+  | UpdateLoadingStatus LoadingStatus a
   | UpdateNewURI String a
   | UpdateNewTags String a
   | UpdateEntries (Array Entry) a
@@ -222,7 +223,7 @@ ui (AppConfig conf) = component render eval
       pure next
     eval (ResetNewForm next) =
       modify resetState $> next
-    eval (LoadingAction status next) =
+    eval (UpdateLoadingStatus status next) =
       modify (\(State s) -> State $ s { loadingStatus = status }) $> next
     eval (UpdateNewURI str next) =
       modify (\(State s) -> State $ s { newUrl = hush $ runParseURI str }) $> next
@@ -231,7 +232,7 @@ ui (AppConfig conf) = component render eval
     eval (UpdateEntries entries next) =
       modify (\(State s) -> State $ s { entries = entries }) $> next
     eval (ShowError str next) =
-      modify (\(State s) -> State $ s { error = str }) $> next
+      modify (\(State s) -> State $ s { error = str }) $> (action $ UpdateLoadingStatus LoadingError) $> next
 
 saveEntry :: forall eff. FB.Firebase -> Entry -> Aff (firebase :: FB.FirebaseEff | eff) Unit
 saveEntry firebase entry = liftEff $ do
@@ -281,16 +282,14 @@ main = runAff throwException (const $ pure unit) $ do
       -- Careful, this isn't actually "blocking" but emits everything
       -- on subscription.
       ds <- FBA.on FB.Value children
-      driver (action $ LoadingAction Loading)
+      driver (action $ UpdateLoadingStatus Loading)
       case (Foreign.unsafeReadTagged "Object" $ DS.val ds) >>= decodeEntries of
         Right entries -> do
           -- Combine these. How do I free?!
           driver $ action $ UpdateEntries entries
-          driver $ action $ LoadingAction Loaded
+          driver $ action $ UpdateLoadingStatus Loaded
         Left  err     -> do
-          -- TODO: One is enough ...
           driver $ action $ ShowError $ show err
-          driver $ action $ LoadingAction $ LoadingError $ show err
 
       log "New Data!"
 
