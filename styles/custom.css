@@ -168,9 +168,6 @@ html, body {
 .gla-app .mdl-card .mdl-card__supporting-text > h3:first-child {
   margin-bottom: 24px;
 }
-.gla-app .mdl-layout__tab-panel:not(#overview) {
-  background-color: white;
-}
 .gla-app #features section {
   margin-bottom: 72px;
 }
@@ -209,25 +206,17 @@ html, body {
 
 /* GifLibApp Specifics */
 
-.gla-content {
-  margin: 24px;
-}
-
-.gla-layout--margin-h {
-  margin: 12px 0 12px 0;
-}
-
-.gla-card-holder {
+/*.gla-card-holder {
   background: whitesmoke;
   display: flex;
   flex-wrap: wrap;
-}
+}*/
 
-.gla-card-holder .mdl-card {
+/*.gla-card-holder .mdl-card {
   margin: 20px;
   min-width: 330px;
   height: auto;
-}
+}*/
 
 .gla-form--inline-group {
   display: inline-block;
