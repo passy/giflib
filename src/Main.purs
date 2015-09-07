@@ -147,7 +147,7 @@ ui (AppConfig conf) = component render eval
   where
     render :: Render State Input p
     render (State st) = H.div [ P.class_ $ H.className "gla-content" ] $
-      [ H.form [ E.onSubmit (const $ E.preventDefault $> action NoOp)
+      [ H.form [ E.onSubmit (const $ E.preventDefault $> action AddNewEntry)
                , P.class_ $ H.className "gla-layout--margin-h"
                ]
                [ H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
