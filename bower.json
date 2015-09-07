@@ -20,7 +20,8 @@
     "tests"
   ],
   "dependencies": {
-    "firebase": "~2.2.4"
+    "firebase": "~2.2.4",
+    "material-design-lite": "~1.0.4"
   },
   "devDependencies": {
     "node-uuid": "~1.4.3",

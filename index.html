@@ -6,67 +6,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>gif library</title>
 
-    <!-- Add to homescreen -->
-    <link rel="manifest" href="manifest.json">
-
-    <!-- Fallback to homescreen for Chrome <39 on Android -->
+    <!-- Add to homescreen for Chrome on Android -->
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Web Starter Kit">
     <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
 
     <!-- Add to homescreen for Safari on iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Web Starter Kit">
-    <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="Material Design Lite">
+    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
 
     <!-- Tile icon for Win8 (144x144 + tile color) -->
     <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
     <meta name="msapplication-TileColor" content="#3372DF">
-
     <meta name="theme-color" content="#3372DF">
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <!-- Page styles -->
     <!-- build:css(app/) styles/main.cs.min -->
-    <link rel="stylesheet" href="styles/material.css">
+    <link rel="stylesheet" href="../bower_components/material-design-lite/material.css">
     <link rel="stylesheet" href="styles/custom.css">
     <!-- endbuild -->
   </head>
-  <body>
-    <div class="mdl-layout">
-      <header class="mdl-layout__header">
-        <span class="mdl-layout-title">
-          <a href="/"><strong>gif</strong>library</a>
-        </span>
-        <div class="mdl-layout-spacer"></div>
-        <nav class="mdl-navigation">
-          <a class="mdl-navigation__link" href="#hello">Hello</a>
-          <a class="mdl-navigation__link" href="#get-started">Get Started</a>
-          <a class="mdl-navigation__link" href="styleguide.html">Style Guide</a>
-        </nav>
-      </header>
-      <div class="mdl-layout__drawer">
-        <span class="mdl-layout-title">Web <strong>Starter Kit</strong></span>
-        <nav class="mdl-navigation">
-          <a class="mdl-navigation__link" href="#hello">Hello</a>
-          <a class="mdl-navigation__link" href="#get-started">Get Started</a>
-          <a class="mdl-navigation__link" href="styleguide.html">Style Guide</a>
-        </nav>
+  <body class="gla-app mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header mdl-layout__header--scroll mdl-color--primary">
+      <div class="mdl-layout--large-screen-only mdl-layout__header-row">
       </div>
-
-      <main id="app-main" class="mdl-layout__content"></main>
+      <div class="mdl-layout--large-screen-only mdl-layout__header-row">
+        <h3><b>gif</b>lib</h3>
+      </div>
+      <div class="mdl-layout--large-screen-only mdl-layout__header-row">
+      </div>
+      <div class="mdl-layout__tab-bar mdl-js-ripple-effect mdl-color--primary-dark">
+        <a href="#gla-list" class="mdl-layout__tab is-active">Gifs</a>
+        <a href="#features" class="mdl-layout__tab">Features</a>
+        <a href="#features" class="mdl-layout__tab">Details</a>
+        <a href="#features" class="mdl-layout__tab">Technology</a>
+        <a href="#features" class="mdl-layout__tab">FAQ</a>
+        <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored mdl-shadow--4dp mdl-color--accent" id="add">
+          <i class="material-icons" role="presentation">add</i>
+          <span class="visuallyhidden">Add</span>
+        </button>
+      </div>
+    </header>
+      <main class="mdl-layout__content">
+         <div class="mdl-layout__tab-panel is-active" id="gla-list">
+           <section class="section--center mdl-grid mdl-grid--no-spacing" id="app-main">
+           </section>
+         </div>
+      </main>
     </div>
 
     <!-- build:js(app/) js/app.min.js -->
     <script src="../bower_components/firebase/firebase-debug.js"></script>
+    <script src="../bower_components/material-design-lite/material.js"></script>
     <script async src="app.js"></script>
-
-    <script src="js/thirdparty/mdlComponentHandler.js"></script>
-    <script src="js/thirdparty/mdlTextfield.js"></script>
-    <script src="js/thirdparty/mdlButton.js"></script>
-    <script src="js/thirdparty/mdlRipple.js"></script>
-    <script src="js/thirdparty/mdlSpinner.js"></script>
-    <script src="js/thirdparty/rAF.js"></script>
     <!-- endbuild -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
