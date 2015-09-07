@@ -204,20 +204,6 @@ html, body {
   z-index: 99;
 }
 
-/* GifLibApp Specifics */
-
-/*.gla-card-holder {
-  background: whitesmoke;
-  display: flex;
-  flex-wrap: wrap;
-}*/
-
-/*.gla-card-holder .mdl-card {
-  margin: 20px;
-  min-width: 330px;
-  height: auto;
-}*/
-
 .gla-form--inline-group {
   display: inline-block;
   margin-right: 12px;
