@@ -4,6 +4,7 @@ before_script:
   - npm install bower
   - npm install -g purescript
   - node_modules/.bin/bower install
+  - node_modules/.bin/bower ls
 node_js:
 - '0.12'
 - 'iojs'
