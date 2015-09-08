@@ -26,6 +26,7 @@ import qualified MDL as MDL
 import qualified MDL.Button as MDL
 import qualified MDL.Spinner as MDL
 import qualified MDL.Textfield as MDL
+import qualified MDL.Color as MDL
 import qualified Node.UUID as NUUID
 import qualified Web.Firebase as FB
 import qualified Web.Firebase.Monad.Aff as FBA
@@ -72,7 +73,6 @@ import Data.URI.Types (URI())
 import Halogen.Query (modify, gets, get)
 
 
-import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 
@@ -147,10 +147,8 @@ ui :: forall p. AppConfig -> Component State Input (Aff AppEffects) p
 ui (AppConfig conf) = component render eval
   where
     render :: Render State Input p
-    render (State st) = H.div [ P.class_ $ H.className "gla-content" ] $
-      [ H.form [ E.onSubmit (const $ E.preventDefault $> action AddNewEntry)
-               , P.class_ $ H.className "gla-layout--margin-h"
-               ]
+    render (State st) = H.div_ $
+      [ H.form [ E.onSubmit (const $ E.preventDefault $> action AddNewEntry) ]
                [ H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
                  MDL.textfield [ E.onValueChange $ E.input UpdateNewURI ] $
                    MDL.defaultTextfield { id = Just "inp-new-gif"
@@ -169,23 +167,23 @@ ui (AppConfig conf) = component render eval
                                      } ]
                ]
       , MDL.spinner (st.loadingStatus == Loading)
-      , H.div [ P.class_ $ H.className "gla-card-holder" ] $ map entryCard st.entries
+      , H.div [ P.class_ MDL.grid ] $ map entryCard st.entries
       ]
 
     entryCard :: Render Entry Input p
     entryCard (Entry e) = H.div
-        [ P.classes [ MDL.card, MDL.shadow 3 ]
+        [ P.classes $ [ MDL.card, MDL.shadow 3, MDL.color "white" ] <> MDL.cellCol 6
         , P.key $ runUUID e.id
         ]
-        [ H.div [ P.class_ MDL.cardImageContainer
+        [ H.div [ P.class_ $ H.className "gla-card__image-container"
                 , CSS.style $ backgroundImage $ entryBackground e
                 ] []
-        , H.div [ P.class_ MDL.cardHeading ]
+        , H.div [ P.class_ MDL.cardTitle ]
             [ H.h2
-                [ P.class_ MDL.cardHeadingText ] [ H.text $ formatEntryTags e ]
+                [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e ]
             ]
-        , H.div [ P.class_ MDL.cardCaption ] [ H.text $ formatEntryDatetime e ]
-        , H.div [ P.class_ MDL.cardBottom ]
+        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ P.classes [ MDL.cardActions, MDL.cardBorder ] ]
             [ H.a
                 [ P.href $ printURI e.uri
                 , P.class_ MDL.cardUri
@@ -237,7 +235,7 @@ ui (AppConfig conf) = component render eval
 saveEntry :: forall eff. FB.Firebase -> Entry -> Aff (firebase :: FB.FirebaseEff | eff) Unit
 saveEntry firebase entry = liftEff $ do
   children <- FB.child "entries" firebase
-  FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
+  FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =

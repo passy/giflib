@@ -1,38 +1,56 @@
 module MDL
   ( card
-  , cardImageContainer
-  , cardHeading
-  , cardHeadingText
-  , cardCaption
-  , cardBottom
+  , cardTitle
+  , cardTitleText
+  , cardBorder
+  , cardActions
+  , cardSubtitleText
+  , cardSupportingText
   , cardUri
+  , grid
   , shadow
+  , cellCol
   )
 where
 
 import Prelude
+import Data.String (joinWith)
 import Halogen.HTML.Core (ClassName(), className)
 
 card :: ClassName
 card = className "mdl-card"
 
-cardImageContainer :: ClassName
-cardImageContainer = className "mdl-card--img-container"
+cardTitle :: ClassName
+cardTitle = className "mdl-card__title"
 
-cardHeading :: ClassName
-cardHeading = className "mdl-card--heading"
+cardTitleText :: ClassName
+cardTitleText = className "mdl-card__title-text"
 
-cardHeadingText :: ClassName
-cardHeadingText = className "mdl-card--heading-text"
+cardSubtitleText :: ClassName
+cardSubtitleText = className "mdl-card__subtitle-text"
 
-cardCaption :: ClassName
-cardCaption = className "mdl-card--caption"
+cardSupportingText :: ClassName
+cardSupportingText = className "mdl-card__supporting-text"
 
-cardBottom :: ClassName
-cardBottom = className "mdl-card--bottom"
+cardBorder :: ClassName
+cardBorder = className "mdl-card--border"
+
+cardActions :: ClassName
+cardActions = className "mdl-card__actions"
 
 cardUri :: ClassName
 cardUri = className "mdl-card--uri"
 
 shadow :: Int -> ClassName
-shadow z = className $ "mdl-shadow--z" ++ (show z)
+shadow z = className $ joinWith "" ["mdl-shadow--", show z, "dp"]
+
+-- Grid classes
+
+grid :: ClassName
+grid = className "mdl-grid"
+
+cell :: ClassName
+cell = className "mdl-cell"
+
+cellCol :: Int -> Array ClassName
+cellCol n = [cell, className $ joinWith "" ["mdl-cell--", show n, "-col"]]
