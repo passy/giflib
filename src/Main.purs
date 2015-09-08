@@ -73,7 +73,6 @@ import Data.URI.Types (URI())
 import Halogen.Query (modify, gets, get)
 
 
-import Web.Giflib.Internal.Unsafe
 import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 
@@ -236,7 +235,7 @@ ui (AppConfig conf) = component render eval
 saveEntry :: forall eff. FB.Firebase -> Entry -> Aff (firebase :: FB.FirebaseEff | eff) Unit
 saveEntry firebase entry = liftEff $ do
   children <- FB.child "entries" firebase
-  FB.push (Foreign.toForeign $ unsafeShowPrintId $ encodeJson entry) Nothing children
+  FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
 
 formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
 formatEntryDatetime e =
