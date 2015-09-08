@@ -26,7 +26,7 @@
   "devDependencies": {
     "node-uuid": "~1.4.3",
     "purescript-aff": "~0.12.0",
-    "purescript-argonaut": "5ae17cb6e66f5e9f75175683b272d95ad6fb44c5",
+    "purescript-argonaut": "~0.9.0",
     "purescript-arrays": "~0.4.0",
     "purescript-console": "~0.1.0",
     "purescript-control": "~0.3.0",
