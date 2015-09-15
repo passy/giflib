@@ -56,6 +56,7 @@ import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Bifunctor (lmap, rmap)
+import Data.Date.Locale (Locale())
 import Data.Either (Either(Left, Right), either)
 import Data.Either.Unsafe (fromRight)
 import Data.Enum (fromEnum)
@@ -65,16 +66,16 @@ import Data.Generic (Generic, gEq, gShow)
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Moment.Simple (calendar, fromDate)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Data.URI (runParseURI, parseURI, printURI)
 import Data.URI.Types (URI())
 import Halogen.Query (modify, gets, get)
-import Data.Moment.Simple (calendar, fromDate)
 
-
-import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
+import Web.Giflib.Types (Tag(), Entry(..), RenderedEntry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 
 import Halogen
@@ -118,7 +119,7 @@ newtype AppConfig = AppConfig { firebase :: FB.Firebase }
 type AppEffects = HalogenEffects ( uuid :: NUUID.UUIDEff
                                  , console :: CONSOLE
                                  , now :: Date.Now
-                                 , locale :: Date.Locale
+                                 , locale :: Locale
                                  , firebase :: FB.FirebaseEff)
 
 initialState :: State
@@ -175,23 +176,23 @@ ui (AppConfig conf) = component render eval
       ]
 
     entryCard :: Render RenderedEntry Input p
-    entryCard (RenderedEntry e) = H.div
+    entryCard (RenderedEntry { entry: (Entry e), dateStr: dateStr }) = H.div
         [ P.classes $ [ MDL.card, MDL.shadow 3, MDL.color "white" ] <> MDL.cellCol 6
-        , P.key $ runUUID e.entry.id
+        , P.key $ runUUID e.id
         ]
         [ H.div [ P.class_ $ H.className "gla-card__image-container"
-                , CSS.style $ backgroundImage $ entryBackground e.entry
+                , CSS.style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ P.class_ MDL.cardTitle ]
             [ H.h2
-                [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e.entry ]
+                [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e ]
             ]
-        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ e.dateStr ]
+        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ dateStr ]
         , H.div [ P.classes [ MDL.cardActions, MDL.cardBorder ] ]
             [ H.a
-                [ P.href $ printURI e.entry.uri
+                [ P.href $ printURI e.uri
                 , P.class_ MDL.cardUri
-                , P.target "_blank" ] [ H.text $ printURI e.entry.uri ]
+                , P.target "_blank" ] [ H.text $ printURI e.uri ]
             ]
         ]
 
@@ -207,6 +208,9 @@ ui (AppConfig conf) = component render eval
 
     affDateNow :: forall eff. Aff (now :: Date.Now | eff) Date.Date
     affDateNow = liftEff $ Date.now
+
+    affRenderEntries :: forall eff. Array Entry -> Aff (locale :: Locale | eff) (Array RenderedEntry)
+    affRenderEntries entries = liftEff $ traverse renderEntry entries
 
     -- All of them are no-ops for now.
     eval :: Eval Input State Input (Aff AppEffects)
@@ -231,8 +235,10 @@ ui (AppConfig conf) = component render eval
       modify (\(State s) -> State $ s { newUrl = hush $ runParseURI str }) $> next
     eval (UpdateNewTags str next) =
       modify (\(State s) -> State $ s { newTags = processTagInput str }) $> next
-    eval (UpdateEntries entries next) =
-      modify (\(State s) -> State $ s { entries = entries, renderedEntries = renderEntry <$> entries }) $> next
+    eval (UpdateEntries entries next) = do
+      renderedEntries <- liftFI $ affRenderEntries entries
+      modify (\(State s) -> State $ s { entries = entries, renderedEntries = renderedEntries })
+      pure next
     eval (ShowError str next) =
       modify (\(State s) -> State $ s { error = str }) $> (action $ UpdateLoadingStatus LoadingError) $> next
 
@@ -241,12 +247,12 @@ saveEntry firebase entry = liftEff $ do
   children <- FB.child "entries" firebase
   FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
 
-renderEntry :: forall eff. Entry -> Eff (now :: Date.Now, locale :: Date.Locale | eff) RenderedEntry
-renderEntry (Entry e) = do
+renderEntry :: forall eff. Entry -> Eff (now :: Date.Now, locale :: Locale | eff) RenderedEntry
+renderEntry entry@(Entry e) = do
   -- We only recalculate the date display when the list changes. We could do it
   -- every frame, but that would be wasteful.
   dateStr <- calendar $ fromDate e.date
-  return RenderedEntry $ { entry: e.entry, dateStr: dateStr }
+  return $ RenderedEntry { entry: entry, dateStr: dateStr }
 
 formatEntryTags :: forall e. { tags :: Set.Set Tag | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) $ List.fromList $ Set.toList e.tags
