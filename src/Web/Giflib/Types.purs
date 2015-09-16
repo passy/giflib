@@ -12,6 +12,7 @@ import Data.Foldable (foldl)
 import Data.Maybe (maybe)
 import Data.URI (printURI, parseURI, runParseURI)
 import Data.URI.Types (URI())
+import Data.Moment.Simple.Types (Moment())
 
 import Web.Giflib.Internal.Unsafe -- (undefined, unsafePrintId)
 
@@ -31,6 +32,10 @@ newtype Entry = Entry { id :: UUID
                       , tags :: Set.Set Tag
                       , date :: Date.Date
                       }
+
+newtype RenderedEntry = RenderedEntry { entry :: Entry
+                                      , dateStr :: String
+                                      }
 
 instance eqEntry :: Eq Entry where
   eq (Entry a) (Entry b) = a.id == b.id &&

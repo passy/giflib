@@ -56,6 +56,7 @@ import Data.Argonaut.Core (JObject(), fromObject)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Bifunctor (lmap, rmap)
+import Data.Date.Locale (Locale())
 import Data.Either (Either(Left, Right), either)
 import Data.Either.Unsafe (fromRight)
 import Data.Enum (fromEnum)
@@ -65,15 +66,16 @@ import Data.Generic (Generic, gEq, gShow)
 import Data.Identity (Identity(), runIdentity)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Moment.Simple (calendar, fromDate)
 import Data.Monoid (mempty)
 import Data.String (joinWith, trim, split)
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Data.URI (runParseURI, parseURI, printURI)
 import Data.URI.Types (URI())
 import Halogen.Query (modify, gets, get)
 
-
-import Web.Giflib.Types (Tag(), Entry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
+import Web.Giflib.Types (Tag(), Entry(..), RenderedEntry(..), UUID(..), uuid, runUUID, runEntryList, nodeUUIDToUUID)
 import Web.Giflib.DOM.Util (appendToQuerySelector)
 
 import Halogen
@@ -93,12 +95,13 @@ instance eqLoadingStatus :: Eq LoadingStatus where
 instance showLoadingStatus :: Show LoadingStatus where
   show = gShow
 
-newtype State = State { entries       :: Array Entry   -- ^ All entries matching the tag
-                      , tag           :: Maybe Tag     -- ^ Currently selected tag, if any
-                      , newUrl        :: Maybe URI     -- ^ New URI to be submitted
-                      , newTags       :: Set.Set Tag   -- ^ New Tags to be submitted
-                      , error         :: String        -- ^ Global UI error to be shown
-                      , loadingStatus :: LoadingStatus -- ^ List loading state
+newtype State = State { entries         :: Array Entry         -- ^ All entries matching the tag
+                      , renderedEntries :: Array RenderedEntry -- ^ Entries + effectfully rendered information
+                      , tag             :: Maybe Tag           -- ^ Currently selected tag, if any
+                      , newUrl          :: Maybe URI           -- ^ New URI to be submitted
+                      , newTags         :: Set.Set Tag         -- ^ New Tags to be submitted
+                      , error           :: String              -- ^ Global UI error to be shown
+                      , loadingStatus   :: LoadingStatus       -- ^ List loading state
                       }
 
 data Input a
@@ -114,12 +117,14 @@ data Input a
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
 
 type AppEffects = HalogenEffects ( uuid :: NUUID.UUIDEff
-                                     , console :: CONSOLE
-                                     , now :: Date.Now
-                                     , firebase :: FB.FirebaseEff)
+                                 , console :: CONSOLE
+                                 , now :: Date.Now
+                                 , locale :: Locale
+                                 , firebase :: FB.FirebaseEff)
 
 initialState :: State
 initialState = State { entries: mempty
+                     , renderedEntries: mempty
                      , tag: mempty
                      , newUrl: empty
                      , newTags: mempty
@@ -138,10 +143,10 @@ entryFromState (State s) uuid now = do
   guard $ s.loadingStatus == Loaded
 
   return $ Entry { id: uuid
-                , uri: uri
-                , tags: tags
-                , date: now
-                }
+                 , uri: uri
+                 , tags: tags
+                 , date: now
+                 }
 
 ui :: forall p. AppConfig -> Component State Input (Aff AppEffects) p
 ui (AppConfig conf) = component render eval
@@ -167,11 +172,11 @@ ui (AppConfig conf) = component render eval
                                      } ]
                ]
       , MDL.spinner (st.loadingStatus == Loading)
-      , H.div [ P.class_ MDL.grid ] $ map entryCard st.entries
+      , H.div [ P.class_ MDL.grid ] $ map entryCard st.renderedEntries
       ]
 
-    entryCard :: Render Entry Input p
-    entryCard (Entry e) = H.div
+    entryCard :: Render RenderedEntry Input p
+    entryCard (RenderedEntry { entry: (Entry e), dateStr: dateStr }) = H.div
         [ P.classes $ [ MDL.card, MDL.shadow 3, MDL.color "white" ] <> MDL.cellCol 6
         , P.key $ runUUID e.id
         ]
@@ -182,7 +187,7 @@ ui (AppConfig conf) = component render eval
             [ H.h2
                 [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e ]
             ]
-        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ formatEntryDatetime e ]
+        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ dateStr ]
         , H.div [ P.classes [ MDL.cardActions, MDL.cardBorder ] ]
             [ H.a
                 [ P.href $ printURI e.uri
@@ -203,6 +208,9 @@ ui (AppConfig conf) = component render eval
 
     affDateNow :: forall eff. Aff (now :: Date.Now | eff) Date.Date
     affDateNow = liftEff $ Date.now
+
+    affRenderEntries :: forall eff. Array Entry -> Aff (locale :: Locale | eff) (Array RenderedEntry)
+    affRenderEntries entries = liftEff $ traverse renderEntry entries
 
     -- All of them are no-ops for now.
     eval :: Eval Input State Input (Aff AppEffects)
@@ -227,8 +235,10 @@ ui (AppConfig conf) = component render eval
       modify (\(State s) -> State $ s { newUrl = hush $ runParseURI str }) $> next
     eval (UpdateNewTags str next) =
       modify (\(State s) -> State $ s { newTags = processTagInput str }) $> next
-    eval (UpdateEntries entries next) =
-      modify (\(State s) -> State $ s { entries = entries }) $> next
+    eval (UpdateEntries entries next) = do
+      renderedEntries <- liftFI $ affRenderEntries entries
+      modify (\(State s) -> State $ s { entries = entries, renderedEntries = renderedEntries })
+      pure next
     eval (ShowError str next) =
       modify (\(State s) -> State $ s { error = str }) $> (action $ UpdateLoadingStatus LoadingError) $> next
 
@@ -237,16 +247,12 @@ saveEntry firebase entry = liftEff $ do
   children <- FB.child "entries" firebase
   FB.push (Foreign.toForeign $ encodeJson entry) Nothing children
 
-formatEntryDatetime :: forall e. { date :: Date.Date | e } -> String
-formatEntryDatetime e =
-  intercalate "-" $ [ show <<< toNumber <<< getYear <<< Date.year $ e.date
-                    , show <<< (+1) <<< fromEnum <<< Date.month $ e.date
-                    , show <<< toNumber <<< getDay <<< Date.dayOfMonth $ e.date ]
-  where
-    getDay :: Date.DayOfMonth -> Int
-    getDay (Date.DayOfMonth i) = i
-    getYear :: Date.Year -> Int
-    getYear (Date.Year i) = i
+renderEntry :: forall eff. Entry -> Eff (now :: Date.Now, locale :: Locale | eff) RenderedEntry
+renderEntry entry@(Entry e) = do
+  -- We only recalculate the date display when the list changes. We could do it
+  -- every frame, but that would be wasteful.
+  dateStr <- calendar $ fromDate e.date
+  return $ RenderedEntry { entry: entry, dateStr: dateStr }
 
 formatEntryTags :: forall e. { tags :: Set.Set Tag | e } -> String
 formatEntryTags e = joinWith " " $ map (\x -> "#" ++ x) $ List.fromList $ Set.toList e.tags
