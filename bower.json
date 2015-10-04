@@ -20,17 +20,17 @@
     "tests"
   ],
   "dependencies": {
-    "firebase": "~2.2.4",
+    "firebase": "~2.3.1",
     "material-design-lite": "~1.0.4"
   },
   "devDependencies": {
     "node-uuid": "~1.4.3",
-    "purescript-aff": "~0.12.0",
+    "purescript-aff": "~0.13.0",
     "purescript-argonaut": "~0.9.0",
     "purescript-arrays": "~0.4.0",
     "purescript-console": "~0.1.0",
     "purescript-control": "~0.3.0",
-    "purescript-css": "~0.3.0",
+    "purescript-css": "~0.4.0",
     "purescript-datetime": "~0.9.0",
     "purescript-dom": "~0.2.6",
     "purescript-errors": "~0.1.2",
@@ -54,7 +54,6 @@
     "purescript-argonaut-codecs": "^0.3.0",
     "purescript-maps": "^0.5.0",
     "purescript-argonaut-core": "^0.2.0",
-    "purescript-strings": "^0.7.0",
-    "purescript-generics": "~0.6.0"
+    "purescript-strings": "^0.7.0"
   }
 }
