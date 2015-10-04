@@ -43,7 +43,7 @@
     "purescript-nullable": "~0.2.1",
     "purescript-prelude": "~0.1.0",
     "purescript-sets": "~0.5.0",
-    "purescript-test-unit": "passy/purescript-test-unit#ee3450eb9aeaa15752c22a9cc0ff558214e557b6",
+    "purescript-test-unit": "^3.0.0",
     "purescript-transformers": "~0.8.0",
     "purescript-uri": "~0.1.0-rc.1"
   },
