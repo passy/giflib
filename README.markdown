@@ -1,4 +1,4 @@
-# giflib web [![Build Status](https://travis-ci.org/passy/giflib-web.svg?branch=master)](https://travis-ci.org/passy/giflib-web)
+# giflib web [![Build Status](https://travis-ci.org/passy/giflib.svg?branch=master)](https://travis-ci.org/passy/giflib)
 
 Not sure if I'll ever finish this. Right now just a playground for
 PureScript and Halogen.
