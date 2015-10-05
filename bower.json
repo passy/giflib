@@ -37,7 +37,7 @@
     "purescript-exceptions": "~0.3.0",
     "purescript-generics": "~0.6.0",
     "purescript-simple-moment": "^0.2.0",
-    "purescript-halogen": "f40317e7c47cb1debd30dfc5d7a9709eec67f0b1",
+    "purescript-halogen": "d894a2a160478927df0143fe2a6de4438a3c168a",
     "purescript-halogen-css": "b7b2296f8814e231c836bb262fef06489a65f46f",
     "purescript-node-uuid": "passy/purescript-node-uuid#278b34053099e847141d4928fec6f503bf6a0fc1",
     "purescript-nullable": "~0.2.1",
@@ -48,7 +48,6 @@
     "purescript-uri": "~0.1.0-rc.1"
   },
   "resolutions": {
-    "purescript-halogen": "f40317e7c47cb1debd30dfc5d7a9709eec67f0b1",
     "purescript-transformers": "~0.8.0",
     "purescript-foreign": "^0.7.0",
     "purescript-argonaut-codecs": "^0.3.0",
@@ -57,6 +56,11 @@
     "purescript-strings": "^0.7.0",
     "purescript-css": "~0.4.0",
     "purescript-generics": "~0.6.0",
-    "purescript-aff": "~0.13.0"
+    "purescript-aff": "~0.13.0",
+    "purescript-halogen": "d894a2a160478927df0143fe2a6de4438a3c168a",
+    "purescript-free": "^0.9.0",
+    "purescript-aff-coroutines": "^0.4.0",
+    "purescript-coroutines": "^0.5.0",
+    "purescript-freet": "^0.3.0"
   }
 }
