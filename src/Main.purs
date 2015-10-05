@@ -184,10 +184,9 @@ ui (AppConfig conf) = component render eval
                 , CSS.style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ P.class_ MDL.cardTitle ]
-            [ H.h2
-                [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e ]
+            [ H.h2 [ P.class_ MDL.cardTitleText ] [ H.text $ formatEntryTags e ]
+            , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ dateStr ]
             ]
-        , H.div [ P.class_ MDL.cardSubtitleText ] [ H.text $ dateStr ]
         , H.div [ P.classes [ MDL.cardActions, MDL.cardBorder ] ]
             [ H.a
                 [ P.href $ printURI e.uri

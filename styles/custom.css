@@ -14,6 +14,15 @@ html, body {
   display: inline-block;
 }
 
+.gla-app .mdl-card .mdl-card__title {
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.gla-app .mdl-card .mdl-card__title-text {
+  align-self: center;
+}
+
 .gla-app .mdl-layout.is-small-screen .mdl-layout__header-row h3 {
   font-size: inherit;
 }
