@@ -1,14 +1,23 @@
 /* MDL Enhancements */
 
-
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
   margin: 0;
   padding: 0;
 }
+
+.gla-typography--ellipsis {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
 .gla-app .mdl-layout.is-small-screen .mdl-layout__header-row h3 {
   font-size: inherit;
 }
+
 .gla-app .mdl-layout__tab-bar .mdl-layout__tab.is-active::after {
   background-color: white;
   height: 4px;
@@ -37,27 +46,27 @@ html, body {
   color: inherit;
   width: calc(100% - 80px);
 }
+
 .gla-app.gla-app .mdl-card__supporting-text h4 {
   margin-top: 0;
   margin-bottom: 20px;
 }
-.gla-app .mdl-card__actions {
-  margin: 0;
-  padding: 4px 40px;
-  color: inherit;
-}
+
 .gla-app .mdl-card__actions a {
   color: #00BCD4;
   margin: 0;
 }
+
 .gla-app .mdl-card__actions a:hover,
 .gla-app .mdl-card__actions a:active {
   color: inherit;
   background-color: transparent;
 }
+
 .gla-app .mdl-card__supporting-text + .mdl-card__actions {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
+
 .gla-app #add {
   position: fixed;
   right: 40px;

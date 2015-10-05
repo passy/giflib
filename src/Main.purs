@@ -191,7 +191,7 @@ ui (AppConfig conf) = component render eval
         , H.div [ P.classes [ MDL.cardActions, MDL.cardBorder ] ]
             [ H.a
                 [ P.href $ printURI e.uri
-                , P.class_ MDL.cardUri
+                , P.classes [ MDL.cardUri, H.className "gla-typography--ellipsis" ]
                 , P.target "_blank" ] [ H.text $ printURI e.uri ]
             ]
         ]
