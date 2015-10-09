@@ -15,7 +15,8 @@ where
 
 import Prelude
 import Data.String (joinWith)
-import Halogen.HTML.Core (ClassName(), className)
+import Halogen.HTML.Core (ClassName())
+import Halogen.HTML.Indexed (className)
 
 card :: ClassName
 card = className "mdl-card"

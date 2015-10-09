@@ -5,9 +5,8 @@ import Data.Maybe
 import Data.Monoid
 import MDL.Internal (mip)
 
-import qualified Halogen.HTML as H
-import qualified Halogen.HTML.Core as H
-import qualified Halogen.HTML.Properties as A
+import qualified Halogen.HTML.Indexed as H
+import qualified Halogen.HTML.Properties.Indexed as P
 
 data ButtonElevation = ButtonRaised | ButtonFlat
 
@@ -26,7 +25,7 @@ defaultButton = { elevation: ButtonFlat
 
 button :: forall p i. Button -> H.HTML p i
 button t =
-  H.button ([ A.classes btnClasses ] <> (mip A.id_ t.id))
+  H.button ([ P.classes btnClasses ] <> (mip P.id_ t.id))
            [ H.text t.text ]
   where btnClasses = H.className <$> ([ "mdl-button"
                                       , "mdl-js-button"

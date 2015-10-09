@@ -4,7 +4,7 @@ module MDL.Color
 where
 
 import Prelude
-import Halogen.HTML.Core (ClassName(), className)
+import Halogen.HTML.Indexed (ClassName(), className)
 
 
 -- TODO: Would be great to import this and make it type-safe.

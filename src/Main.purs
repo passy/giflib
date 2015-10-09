@@ -14,12 +14,12 @@ import qualified Data.Foreign as Foreign
 import qualified Data.List as List
 import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
-import qualified Halogen.HTML as H
-import qualified Halogen.HTML.Core as H
+import qualified Halogen.HTML.Indexed as H
+import qualified Halogen.HTML as HU
 import qualified Halogen.HTML.CSS as CSS
-import qualified Halogen.HTML.Properties as P
-import qualified Halogen.HTML.Events as E
-import qualified Halogen.HTML.Events.Forms as E
+import qualified Halogen.HTML.Properties as PU
+import qualified Halogen.HTML.Properties.Indexed as P
+import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Types as E
 import qualified MDL as MDL
@@ -158,7 +158,7 @@ ui (AppConfig conf) = component render eval
                  MDL.textfield [ E.onValueChange $ E.input UpdateNewURI ] $
                    MDL.defaultTextfield { id = Just "inp-new-gif"
                                         , label = Just "URL"
-                                        , type_ = "url"
+                                        , type_ = P.InputUrl
                                         } ]
                , H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
                  MDL.textfield [ E.onValueChange $ E.input UpdateNewTags ] $
@@ -178,9 +178,9 @@ ui (AppConfig conf) = component render eval
     entryCard :: Render RenderedEntry Input p
     entryCard (RenderedEntry { entry: (Entry e), dateStr: dateStr }) = H.div
         [ P.classes $ [ MDL.card, MDL.shadow 3, MDL.color "white" ] <> MDL.cellCol 6
-        , P.key $ runUUID e.id
+        -- , P.key $ runUUID e.id
         ]
-        [ H.div [ P.class_ $ H.className "gla-card__image-container"
+        [ HU.div [ PU.class_ $ H.className "gla-card__image-container"
                 , CSS.style $ backgroundImage $ entryBackground e
                 ] []
         , H.div [ P.class_ MDL.cardTitle ]
