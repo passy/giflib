@@ -104,7 +104,7 @@ newtype State = State { entries         :: Array Entry         -- ^ All entries 
                       , loadingStatus   :: LoadingStatus       -- ^ List loading state
                       }
 
-data Input a
+data Query a
   = NoOp a
   | ResetNewForm a
   | AddNewEntry a
@@ -116,11 +116,11 @@ data Input a
 
 newtype AppConfig = AppConfig { firebase :: FB.Firebase }
 
-type AppEffects = HalogenEffects ( uuid :: NUUID.UUIDEff
-                                 , console :: CONSOLE
-                                 , now :: Date.Now
-                                 , locale :: Locale
-                                 , firebase :: FB.FirebaseEff)
+type AppEffects eff = HalogenEffects ( uuid :: NUUID.UUIDEff
+                                     , console :: CONSOLE
+                                     , now :: Date.Now
+                                     , locale :: Locale
+                                     , firebase :: FB.FirebaseEff | eff )
 
 initialState :: State
 initialState = State { entries: mempty
@@ -148,10 +148,10 @@ entryFromState (State s) uuid now = do
                  , date: now
                  }
 
-ui :: forall p. AppConfig -> Component State Input (Aff AppEffects) p
+ui :: forall eff. AppConfig -> Component State Query (Aff (AppEffects eff))
 ui (AppConfig conf) = component render eval
   where
-    render :: Render State Input p
+    render :: Render State Query
     render (State st) = H.div_ $
       [ H.form [ E.onSubmit (const $ E.preventDefault $> action AddNewEntry) ]
                [ H.div [ P.class_ $ H.className "gla-form--inline-group" ] [
@@ -175,7 +175,7 @@ ui (AppConfig conf) = component render eval
       , H.div [ P.class_ MDL.grid ] $ map entryCard st.renderedEntries
       ]
 
-    entryCard :: Render RenderedEntry Input p
+    entryCard :: Render RenderedEntry Query
     entryCard (RenderedEntry { entry: (Entry e), dateStr: dateStr }) = H.div
         [ P.classes $ [ MDL.card, MDL.shadow 3, MDL.color "white" ] <> MDL.cellCol 6
         -- , P.key $ runUUID e.id
@@ -212,7 +212,7 @@ ui (AppConfig conf) = component render eval
     affRenderEntries entries = liftEff $ traverse renderEntry entries
 
     -- All of them are no-ops for now.
-    eval :: Eval Input State Input (Aff AppEffects)
+    eval :: Eval Query State Query (Aff (AppEffects eff))
     eval (NoOp next) =
       pure next
     eval (AddNewEntry next) = do
@@ -260,7 +260,7 @@ processTagInput :: String -> Set.Set Tag
 processTagInput = trim >>> split " " >>> List.toList >>> Set.fromList
 
 -- Application Main
-main :: Eff AppEffects Unit
+main :: Eff (AppEffects ()) Unit
 main = runAff throwException (const $ pure unit) $ do
   log "Booting. Beep. Boop."
 
